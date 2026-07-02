@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXUS — نظام التحكم المركزي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0d1117;
@@ -244,6 +244,29 @@ header{
   margin-top:26px;display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:3px;
   color:var(--ok);border:1px dashed var(--ok);border-radius:8px;padding:8px 18px;
 }
+/* ======= المحطة 2 — Kali-style green terminal, English ======= */
+#st2{direction:ltr;text-align:left}
+#st2 .station-head{direction:ltr;text-align:left}
+#st2 .station-head .path{color:#39ff14}
+#st2 .station-head h2{font-family:'Ubuntu Mono',monospace;color:#39ff14;text-shadow:0 0 10px rgba(57,255,20,.35)}
+#st2 .station-head p{font-family:'Ubuntu Mono',monospace;color:#8fd98f}
+#st2 .station-head p b{color:#39ff14}
+#st2 .panel.terminal{background:#000;border-color:#0d3b0d;box-shadow:0 18px 50px rgba(0,255,65,.08)}
+#st2 .panel.terminal .bar{background:#001a00;border-bottom-color:#0d3b0d}
+#st2 .panel.terminal .bar .dots i{background:#0d3b0d}
+#st2 .panel.terminal .bar .title{color:#39ff14;font-family:'Ubuntu Mono',monospace}
+#st2 .term-out{font-family:'Ubuntu Mono',monospace;color:#33ff33;background:#000}
+#st2 .term-out .sys{color:#33ff33}
+#st2 .term-out .okl{color:#39ff14;font-weight:700}
+#st2 .term-out .errl{color:#ff4444}
+#st2 .term-out .cmdl{color:#7dff7d}
+#st2 .term-out .cmdl::before{content:"nexus@field:~$ ";color:#00cc00}
+#st2 .term-out .hl{color:#a0ffa0;font-weight:700}
+#st2 .term-out .warn{color:#ccff33}
+#st2 .term-in{background:#000;border-top-color:#0d3b0d}
+#st2 .term-in .prompt{color:#39ff14;font-family:'Ubuntu Mono',monospace}
+#st2 .term-in input{color:#39ff33;font-family:'Ubuntu Mono',monospace;caret-color:#39ff14}
+#st2 .term-in input::placeholder{color:#1f7a1f}
 .hidden{display:none!important}
 footer{margin-top:34px;text-align:center;color:var(--gray2);font-size:11.5px;font-family:var(--mono);letter-spacing:1px}
 </style>
@@ -362,8 +385,8 @@ const CONFIG = {
   <section id="st2" class="hidden">
     <div class="station-head">
       <div class="path">PATH 02 · ABANDONED WAREHOUSE · FIELD TERMINAL</div>
-      <h2>واجهة الاتصال الميدانية</h2>
-      <p>أمامكم واجهة Terminal متصلة بشبكة الضواحي. مهمتكم: تحديد الجهاز المخترِق، الاتصال به برقم البورت الصحيح، إغلاق الثغرة، ثم إعادة النظام لوضعه الطبيعي. اكتبوا <b style="color:var(--cyan);font-family:var(--mono)">help</b> للبدء.</p>
+      <h2>Field Connection Interface</h2>
+      <p>You have a Terminal interface connected to the suburb station network. Your mission: identify the intruding device, connect to it using the correct port number, close the vulnerability, then restore the system to normal. Type <b style="color:var(--cyan);font-family:var(--mono)">help</b> to begin.</p>
     </div>
 
     <div class="panel terminal">
@@ -725,17 +748,17 @@ if(mode==="2"){
   }
 
   print("NEXUS FIELD TERMINAL — secure shell v1.4");
-  print("متصل بشبكة محطات الضواحي. اكتب help لعرض الأوامر المتاحة.","warn");
+  print("Connected to the suburb station network. Type help to view available commands.","warn");
 
   const HELP =
-`الأوامر المتاحة:
-  help              عرض هذه القائمة
-  scan              فحص الشبكة والبحث عن أجهزة غريبة
-  connect <IP>      الاتصال بجهاز عبر عنوانه
-  patch             إغلاق الثغرة (يتطلب اتصال ناجح)
-  restore           إعادة النظام لوضعه الطبيعي (بعد إغلاق الثغرة)
-  status            عرض حالة المهمة
-  clear             مسح الشاشة`;
+`Available commands:
+  help              show this list
+  scan              scan the network for suspicious devices
+  connect <IP>      connect to a device by its address
+  patch             close the vulnerability (requires an active connection)
+  restore           restore the system to normal (after closing the vulnerability)
+  status            show mission status
+  clear             clear the screen`;
 
   function handle(cmdRaw){
     const cmd=cmdRaw.trim();
@@ -748,14 +771,14 @@ if(mode==="2"){
         state.awaitingPort=false; state.connected=true;
         promptEl.textContent="nexus@field:~$";
         print("PORT ACCEPTED ✓","okl");
-        print("تم الاتصال بالجهاز المخترِق بنجاح.","okl");
-        print("تحذير: الجهاز مرتبط ببروتوكول LEGACY-SUBURB — الثغرة لا تزال مفتوحة.","warn");
-        printHTML('الخطوة التالية: اكتبوا <span class="hl">patch</span> لإغلاق الثغرة.');
+        print("Successfully connected to the intruding device.","okl");
+        print("Warning: the device is linked to the LEGACY-SUBURB protocol — the vulnerability is still open.","warn");
+        printHTML('Next step: type <span class="hl">patch</span> to close the vulnerability.');
       }else{
-        print(cmd? "PORT REJECTED ✗ — رقم بورت خاطئ.":"", "errl");
-        print("تلميح: الرمز هو وقت الانقطاع بالدقائق، مكرراً مرتين.","warn");
-        printHTML('أعيدوا المحاولة، أو اكتبوا <span class="hl">exit</span> للإلغاء.');
-        if(cmd==="exit"){ state.awaitingPort=false; promptEl.textContent="nexus@field:~$"; print("تم إلغاء محاولة الاتصال."); }
+        print(cmd? "PORT REJECTED ✗ — wrong port number.":"", "errl");
+        print("Hint: the code is the outage duration in minutes, repeated twice.","warn");
+        printHTML('Try again, or type <span class="hl">exit</span> to cancel.');
+        if(cmd==="exit"){ state.awaitingPort=false; promptEl.textContent="nexus@field:~$"; print("Connection attempt canceled."); }
       }
       return;
     }
@@ -769,68 +792,68 @@ if(mode==="2"){
       case "clear": out.innerHTML=""; break;
 
       case "status":
-        print(`حالة المهمة:
-  [${state.connected?"✓":" "}] الاتصال بالجهاز المخترِق
-  [${state.patched?"✓":" "}] إغلاق الثغرة
-  [${state.done?"✓":" "}] إعادة النظام`);
+        print(`Mission status:
+  [${state.connected?"✓":" "}] Connected to the intruding device
+  [${state.patched?"✓":" "}] Vulnerability closed
+  [${state.done?"✓":" "}] System restored`);
         break;
 
       case "scan":
-        print("جارٍ فحص الشبكة .....");
+        print("Scanning network .....");
         setTimeout(()=>{
-          printHTML(`نتائج الفحص:
+          printHTML(`Scan results:
   node-10  substation ctrl ......... <span class="okl">TRUSTED</span>
   node-11  substation ctrl ......... <span class="okl">TRUSTED</span>
   node-12  substation ctrl ......... <span class="okl">TRUSTED</span>
   <span class="errl">UNKNOWN  handmade device .... ${IP}  ⚠ UNREGISTERED</span>
 
-جهاز غير مسجّل يبث على بروتوكول قديم — هذا هو جهاز المبتزّين.`);
-          printHTML(`للاتصال به: <span class="hl">connect ${IP}</span>`);
+An unregistered device is broadcasting on a legacy protocol — this is the extortionists' device.`);
+          printHTML(`To connect: <span class="hl">connect ${IP}</span>`);
         },800);
         break;
 
       case "connect":
-        if(!arg){ print("الصيغة: connect <IP> — مثال: connect "+IP,"errl"); break; }
-        if(arg!==IP){ print("فشل الاتصال: لا يوجد جهاز على هذا العنوان. جرّبوا scan أولاً.","errl"); break; }
-        if(state.connected){ print("أنتم متصلون بالجهاز أساساً. الخطوة التالية: patch","warn"); break; }
-        print("محاولة الاتصال بـ "+IP+" .....");
+        if(!arg){ print("Usage: connect <IP> — example: connect "+IP,"errl"); break; }
+        if(arg!==IP){ print("Connection failed: no device at this address. Try scan first.","errl"); break; }
+        if(state.connected){ print("You're already connected to the device. Next step: patch","warn"); break; }
+        print("Attempting to connect to "+IP+" .....");
         setTimeout(()=>{
-          print("الجهاز يطلب المصادقة.","warn");
-          printHTML('أدخلوا <span class="hl">رقم البورت (كلمة المرور)</span>:');
+          print("The device is requesting authentication.","warn");
+          printHTML('Enter the <span class="hl">port number (password)</span>:');
           state.awaitingPort=true;
           promptEl.textContent="PORT:";
         },700);
         break;
 
       case "patch":
-        if(!state.connected){ print("لا يوجد اتصال نشط. استخدموا scan ثم connect أولاً.","errl"); break; }
-        if(state.patched){ print("الثغرة مغلقة أساساً. الخطوة التالية: restore","warn"); break; }
-        print("جارٍ إغلاق بروتوكول LEGACY-SUBURB .....");
+        if(!state.connected){ print("No active connection. Use scan then connect first.","errl"); break; }
+        if(state.patched){ print("The vulnerability is already closed. Next step: restore","warn"); break; }
+        print("Closing LEGACY-SUBURB protocol .....");
         setTimeout(()=>{
           state.patched=true;
-          print("PATCH APPLIED ✓ — الثغرة أُغلقت، وانقطع اتصال المبتزّين نهائياً.","okl");
-          printHTML('الخطوة الأخيرة: اكتبوا <span class="hl">restore</span> لإعادة النظام لوضعه الطبيعي.');
+          print("PATCH APPLIED ✓ — vulnerability closed, the extortionists' connection has been permanently cut.","okl");
+          printHTML('Final step: type <span class="hl">restore</span> to restore the system to normal.');
         },900);
         break;
 
       case "restore":
-        if(!state.patched){ print("لا يمكن إعادة النظام قبل إغلاق الثغرة (patch).","errl"); break; }
+        if(!state.patched){ print("Cannot restore the system before closing the vulnerability (patch).","errl"); break; }
         if(state.done) break;
-        print("جارٍ إعادة محطات الضواحي للتشغيل الآمن .....");
+        print("Restoring suburb stations to safe operation .....");
         setTimeout(()=>{
           state.done=true;
           print("SYSTEM RESTORED ✓","okl");
           setTimeout(()=>win(
-            "تم قطع اتصال المبتزّين وإغلاق الثغرة",
-            "أعدتم محطات الضواحي للتشغيل الآمن، ولم يعد بإمكان أي جهة خارجية الوصول لشبكة نيكسوس عبر البروتوكول القديم. مدينة أوركيد بأمان — أحسنتم أيها المحققون."
+            "Extortionists' connection cut and vulnerability closed",
+            "You've restored the suburb stations to safe operation, and no external party can access the NEXUS network via the legacy protocol anymore. Orchid City is safe — well done, investigators."
           ),700);
         },900);
         break;
 
-      case "exit": print("لا يوجد جلسة لإنهائها."); break;
+      case "exit": print("No active session to end."); break;
 
       default:
-        print(`أمر غير معروف: ${c} — اكتبوا help لعرض الأوامر.`,"errl");
+        print(`Unknown command: ${c} — type help to view commands.`,"errl");
     }
   }
 
