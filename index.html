@@ -149,9 +149,9 @@ header{
 .terminal{min-height:480px;display:flex;flex-direction:column}
 .term-out{
   flex:1;padding:20px 22px;font-family:var(--mono);font-size:13px;line-height:2.05;
-  overflow-y:auto;max-height:480px;direction:ltr;text-align:left;
+  overflow-y:auto;max-height:480px;direction:ltr;text-align:start;
 }
-.term-out .ln{white-space:pre-wrap;word-break:break-word}
+.term-out .ln{white-space:pre-wrap;word-break:break-word;text-align:start}
 .term-out .sys{color:var(--gray)}
 .term-out .okl{color:var(--ok)}
 .term-out .errl{color:var(--danger)}
@@ -166,7 +166,7 @@ header{
 .term-in .prompt{font-family:var(--mono);color:var(--blue);font-size:13px;white-space:nowrap}
 .term-in input{
   flex:1;background:transparent;border:none;outline:none;color:var(--white);
-  font-family:var(--mono);font-size:14px;caret-color:var(--cyan);
+  font-family:var(--mono);font-size:14px;caret-color:var(--cyan);text-align:start;
 }
 
 /* ======= لوحة إدخال الرمز ======= */
@@ -397,7 +397,7 @@ const CONFIG = {
       <div class="term-out" id="termout"></div>
       <div class="term-in">
         <span class="prompt" id="termprompt">nexus@field:~$</span>
-        <input type="text" id="termin" autocomplete="off" spellcheck="false" placeholder="type a command...">
+        <input type="text" id="termin" dir="auto" autocomplete="off" spellcheck="false" placeholder="type a command...">
       </div>
     </div>
   </section>
@@ -735,6 +735,7 @@ if(mode==="2"){
   function print(text, cls="sys"){
     const d=document.createElement("div");
     d.className="ln "+cls;
+    d.dir="auto";
     d.textContent=text;
     out.appendChild(d);
     out.scrollTop=out.scrollHeight;
@@ -742,6 +743,7 @@ if(mode==="2"){
   function printHTML(html, cls="sys"){
     const d=document.createElement("div");
     d.className="ln "+cls;
+    d.dir="auto";
     d.innerHTML=html;
     out.appendChild(d);
     out.scrollTop=out.scrollHeight;
