@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — نظام التحكم المركزي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117;
+  --bg2:#131a24;
+  --panel:#1a2332;
+  --panel2:#212d40;
+  --line:#2c3a52;
+  --line2:#3a4d6e;
+  --blue:#4da3ff;
+  --blue2:#7cc0ff;
+  --cyan:#5eead4;
+  --white:#eef3fa;
+  --gray:#8b9bb4;
+  --gray2:#5c6b84;
+  --danger:#ff6b6b;
+  --ok:#4ade80;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans Arabic',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--white);
+  overflow-x:hidden;
+  position:relative;
+}
+/* شبكة خلفية بنمط AI */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(77,163,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(77,163,255,.045) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(77,163,255,.13),transparent 60%);
+}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 20px 60px}
+
+/* ======= الهيدر ======= */
+header{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px 0;border-bottom:1px solid var(--line);margin-bottom:28px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{
+  width:42px;height:42px;border-radius:10px;
+  background:linear-gradient(135deg,#1e3a5f,#0d1b2e);
+  border:1px solid var(--line2);
+  display:grid;place-items:center;position:relative;overflow:hidden;
+}
+.brand .logo::before{
+  content:"";position:absolute;width:16px;height:16px;border-radius:50%;
+  border:2px solid var(--blue);box-shadow:0 0 14px rgba(77,163,255,.7);
+  animation:pulse 2.4s ease-in-out infinite;
+}
+.brand .logo::after{
+  content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:var(--cyan);
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.45}}
+.brand h1{font-size:17px;font-weight:700;letter-spacing:.3px}
+.brand h1 span{color:var(--blue);font-family:var(--mono);font-size:14px}
+.brand small{display:block;color:var(--gray);font-size:11.5px;font-weight:400}
+
+/* شريط العداد */
+.timerchip{
+  display:flex;align-items:center;gap:10px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:9px 16px;font-family:var(--mono);
+}
+.timerchip .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 1.8s infinite}
+.timerchip.closed .dot{background:var(--danger);box-shadow:0 0 10px var(--danger)}
+.timerchip.waiting .dot{background:#facc15;box-shadow:0 0 10px #facc15}
+.timerchip .t{font-size:19px;font-weight:600;color:var(--blue2);min-width:74px;text-align:center;direction:ltr}
+.timerchip .lbl{font-family:var(--sans);font-size:12px;color:var(--gray)}
+
+/* ======= صفحة الاختيار ======= */
+.landing{text-align:center;padding-top:36px}
+.landing .sys{font-family:var(--mono);color:var(--blue);font-size:13px;letter-spacing:4px;margin-bottom:14px}
+.landing h2{font-size:34px;font-weight:700;margin-bottom:10px}
+.landing p{color:var(--gray);max-width:520px;margin:0 auto 42px;line-height:1.9;font-size:15px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:28px 22px;text-align:right;cursor:pointer;text-decoration:none;color:var(--white);
+  transition:.25s;position:relative;overflow:hidden;
+}
+.card::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;background:var(--blue);opacity:0;transition:.25s}
+.card:hover{border-color:var(--line2);transform:translateY(-3px);background:var(--panel2)}
+.card:hover::before{opacity:1}
+.card .num{font-family:var(--mono);color:var(--blue);font-size:12px;letter-spacing:2px;margin-bottom:10px}
+.card h3{font-size:18px;margin-bottom:8px}
+.card p{color:var(--gray);font-size:13px;line-height:1.8}
+
+/* ======= هيكل المحطة ======= */
+.station-head{margin-bottom:26px}
+.station-head .path{font-family:var(--mono);font-size:12px;color:var(--blue);letter-spacing:2px;margin-bottom:8px}
+.station-head h2{font-size:26px;font-weight:700}
+.station-head p{color:var(--gray);margin-top:8px;line-height:1.9;font-size:14.5px;max-width:720px}
+
+.panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);
+}
+.panel .bar{
+  display:flex;align-items:center;gap:8px;padding:11px 16px;
+  background:var(--bg2);border-bottom:1px solid var(--line);
+}
+.panel .bar .dots{display:flex;gap:6px}
+.panel .bar .dots i{width:10px;height:10px;border-radius:50%;background:var(--line2)}
+.panel .bar .title{font-family:var(--mono);font-size:12px;color:var(--gray);margin-inline-start:8px;direction:ltr}
+
+/* ======= متصفح الملفات ======= */
+.files{display:grid;grid-template-columns:280px 1fr;min-height:480px}
+@media(max-width:760px){.files{grid-template-columns:1fr}}
+.filelist{border-inline-end:1px solid var(--line);background:var(--bg2);padding:10px;overflow-y:auto;max-height:560px}
+.filelist .sec{font-size:11px;color:var(--gray2);letter-spacing:1.5px;padding:8px 10px 6px;font-family:var(--mono)}
+.file{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;
+  font-family:var(--mono);font-size:12.5px;color:var(--gray);transition:.15s;direction:ltr;justify-content:flex-end;
+}
+.file:hover{background:rgba(77,163,255,.07);color:var(--white)}
+.file.active{background:rgba(77,163,255,.13);color:var(--blue2)}
+.file svg{flex-shrink:0;opacity:.7}
+.viewer{padding:22px 26px;overflow-y:auto;max-height:560px}
+.viewer .fname{font-family:var(--mono);color:var(--blue2);font-size:13px;margin-bottom:4px;direction:ltr;text-align:left}
+.viewer .fmeta{font-family:var(--mono);color:var(--gray2);font-size:11px;margin-bottom:18px;direction:ltr;text-align:left}
+.viewer pre{
+  font-family:var(--mono);font-size:12.5px;line-height:2;color:#b9c7dd;
+  white-space:pre-wrap;direction:ltr;text-align:left;
+}
+.viewer pre .c{color:var(--gray2)}
+.viewer pre .k{color:var(--cyan)}
+.viewer pre .v{color:var(--blue2)}
+.viewer .empty{color:var(--gray2);text-align:center;padding-top:120px;font-size:14px}
+
+/* ======= التيرمينال ======= */
+.terminal{min-height:480px;display:flex;flex-direction:column}
+.term-out{
+  flex:1;padding:20px 22px;font-family:var(--mono);font-size:13px;line-height:2.05;
+  overflow-y:auto;max-height:480px;direction:ltr;text-align:left;
+}
+.term-out .ln{white-space:pre-wrap;word-break:break-word}
+.term-out .sys{color:var(--gray)}
+.term-out .okl{color:var(--ok)}
+.term-out .errl{color:var(--danger)}
+.term-out .cmdl{color:var(--white)}
+.term-out .cmdl::before{content:"nexus@field:~$ ";color:var(--blue)}
+.term-out .hl{color:var(--cyan)}
+.term-out .warn{color:#facc15}
+.term-in{
+  display:flex;align-items:center;gap:10px;padding:13px 18px;
+  border-top:1px solid var(--line);background:var(--bg2);direction:ltr;
+}
+.term-in .prompt{font-family:var(--mono);color:var(--blue);font-size:13px;white-space:nowrap}
+.term-in input{
+  flex:1;background:transparent;border:none;outline:none;color:var(--white);
+  font-family:var(--mono);font-size:14px;caret-color:var(--cyan);
+}
+
+/* ======= لوحة إدخال الرمز ======= */
+.codeform{display:grid;grid-template-columns:1fr 1fr;min-height:440px}
+@media(max-width:760px){.codeform{grid-template-columns:1fr}}
+.codeinfo{padding:30px 28px;border-inline-end:1px solid var(--line)}
+@media(max-width:760px){.codeinfo{border-inline-end:none;border-bottom:1px solid var(--line)}}
+.codeinfo .msg{
+  background:var(--bg2);border:1px solid var(--line);border-inline-start:3px solid var(--blue);
+  border-radius:10px;padding:18px;font-size:14px;line-height:2;color:#c8d4e6;margin-bottom:18px;
+}
+.codeinfo .msg b{color:var(--white)}
+.codeinfo .hintline{color:var(--gray);font-size:13px;line-height:1.9}
+.keypadside{padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(13,17,23,.4)}
+.display{
+  width:100%;max-width:300px;background:var(--bg);border:1px solid var(--line2);border-radius:12px;
+  padding:16px;text-align:center;font-family:var(--mono);font-size:26px;letter-spacing:6px;
+  color:var(--cyan);min-height:64px;margin-bottom:18px;direction:ltr;
+  box-shadow:inset 0 2px 12px rgba(0,0,0,.5);position:relative;
+}
+.display:empty::before{content:"– – – – – –";color:var(--gray2);letter-spacing:4px}
+.display.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.keypad{display:grid;grid-template-columns:repeat(3,78px);gap:11px;direction:ltr}
+.keypad button{
+  height:60px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel2);color:var(--white);font-family:var(--mono);font-size:20px;font-weight:500;
+  cursor:pointer;transition:.12s;
+}
+.keypad button:hover{background:#2a3a55;border-color:var(--line2)}
+.keypad button:active{transform:scale(.94);background:var(--blue);color:#04101f}
+.keypad button.fn{font-size:14px;color:var(--gray)}
+.keypad button.go{background:var(--blue);color:#04101f;font-family:var(--sans);font-weight:700;font-size:15px}
+.keypad button.go:hover{background:var(--blue2)}
+.kmsg{margin-top:14px;font-size:13px;min-height:20px;text-align:center}
+.kmsg.err{color:var(--danger)}
+.kmsg.ok{color:var(--ok)}
+
+/* ======= شاشة القفل / الانتظار ======= */
+.lockscreen{
+  position:fixed;inset:0;z-index:50;background:rgba(9,12,18,.94);backdrop-filter:blur(8px);
+  display:none;place-items:center;text-align:center;padding:20px;
+}
+.lockscreen.show{display:grid}
+.lockscreen .box{max-width:460px}
+.lockscreen .icon{
+  width:80px;height:80px;margin:0 auto 22px;border-radius:50%;
+  border:2px solid var(--danger);display:grid;place-items:center;
+  box-shadow:0 0 40px rgba(255,107,107,.25);animation:pulse 2s infinite;font-size:32px;
+}
+.lockscreen.waitmode .icon{border-color:#facc15;box-shadow:0 0 40px rgba(250,204,21,.2)}
+.lockscreen h3{font-size:24px;margin-bottom:10px}
+.lockscreen p{color:var(--gray);line-height:1.9;font-size:14.5px;margin-bottom:22px}
+.lockscreen .big{
+  font-family:var(--mono);font-size:52px;font-weight:600;color:var(--blue2);
+  direction:ltr;letter-spacing:2px;text-shadow:0 0 30px rgba(77,163,255,.4);
+}
+
+/* ======= شاشة النجاح ======= */
+.success{
+  position:fixed;inset:0;z-index:60;background:rgba(9,12,18,.96);backdrop-filter:blur(10px);
+  display:none;place-items:center;text-align:center;padding:20px;
+}
+.success.show{display:grid}
+.success .box{max-width:520px;animation:rise .6s ease}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.success .ring{
+  width:96px;height:96px;margin:0 auto 24px;border-radius:50%;
+  border:2px solid var(--ok);display:grid;place-items:center;font-size:40px;color:var(--ok);
+  box-shadow:0 0 50px rgba(74,222,128,.3);
+}
+.success h3{font-size:28px;margin-bottom:12px}
+.success p{color:var(--gray);line-height:2;font-size:15px}
+.success .stamp{
+  margin-top:26px;display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:3px;
+  color:var(--ok);border:1px dashed var(--ok);border-radius:8px;padding:8px 18px;
+}
+.hidden{display:none!important}
+footer{margin-top:34px;text-align:center;color:var(--gray2);font-size:11.5px;font-family:var(--mono);letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+  إعدادات اللعبة — عدّل هون بس ✏️
+  ============================================================ -->
+<script>
+const CONFIG = {
+
+  // ⏰ وقت بداية أول دورة عدّ (بتوقيت جهاز اللاعب)
+  // الصيغة: "YYYY-MM-DDTHH:MM:SS"
+  // خليها "" (فاضية) إذا بدك الموقع يشتغل عادي بدون عداد (للتجريب)
+  startTime: "",            // مثال: "2026-07-10T20:00:00"
+
+  openMinutes:   20,        // مدة الفتح بكل دورة
+  closedMinutes: 5,         // مدة الإغلاق بين الدورات
+  cycles:        3,         // عدد الدورات قبل ما يشتغل الموقع بشكل دائم
+
+  // 🔑 رموز المحطات
+  code1: "101101",          // المحطة 1: الرمز الثنائي المخفي بملف الاستعادة
+                            // (إذا غيّرته، غيّر نفس القيمة بمحتوى ملف recovery_restore.log تحت)
+  code2Port: "44",          // المحطة 2: رقم البورت (4 دقايق مكررة مرتين)
+  code3: "3007",            // المحطة 3: الرمز الناتج عن فك شيفرة مورس — غيّرو حسب لغزك
+};
+</script>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>NEXUS <span>v2.2-stable</span></h1>
+        <small>نظام إدارة مدينة أوركيد — واجهة الطوارئ الميدانية</small>
+      </div>
+    </div>
+    <div class="timerchip" id="timerchip">
+      <span class="dot"></span>
+      <span class="lbl" id="timerlbl">المحطة نشطة</span>
+      <span class="t" id="timerval">--:--</span>
+    </div>
+  </header>
+
+  <!-- ================= صفحة الاختيار ================= -->
+  <section id="landing" class="landing hidden">
+    <div class="sys">EMERGENCY ACCESS PORTAL</div>
+    <h2>بوابة فرقة الاستجابة الطارئة</h2>
+    <p>هذه الصفحة مخصصة لتوليد روابط المحطات الثلاث. كل مسار تحقيق له رابط خاص — ضعوا الرابط داخل رمز QR للمحطة المناسبة.</p>
+    <div class="cards">
+      <a class="card" href="?m=1">
+        <div class="num">PATH 01 — SERVER ROOM</div>
+        <h3>غرفة السيرفرات الرئيسية</h3>
+        <p>سجلّات النظام — البحث عن رمز إعادة ضبط وحدة توزيع الطاقة.</p>
+      </a>
+      <a class="card" href="?m=2">
+        <div class="num">PATH 02 — WAREHOUSE</div>
+        <h3>المستودع المهجور</h3>
+        <p>واجهة Terminal — الاتصال بالجهاز المخترِق وقطع الاتصال بأمان.</p>
+      </a>
+      <a class="card" href="?m=3">
+        <div class="num">PATH 03 — CITY SQUARE</div>
+        <h3>ساحة وسط المدينة</h3>
+        <p>لوحة التحكم — إدخال الرمز المستخلص من فك شيفرة اللوحة الرقمية.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ================= المحطة 1: متصفح الملفات ================= -->
+  <section id="st1" class="hidden">
+    <div class="station-head">
+      <div class="path">PATH 01 · SERVER ROOM · POWER DISTRIBUTION CORE</div>
+      <h2>سجلّات نظام نيكسوس</h2>
+      <p>تم رصد تضارب في وحدات توزيع الطاقة الفرعية. لإعادة ضبط وحدة التحكم الأساسية، ابحثوا في ملفات السجلّ عن <b style="color:var(--white)">رمز إعادة الضبط</b> ثم أدخلوه في لوحة الأرقام أدناه.</p>
+    </div>
+
+    <div class="panel">
+      <div class="bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="title">/var/log/nexus/ — 10 files</div>
+      </div>
+      <div class="files">
+        <div class="filelist" id="filelist">
+          <div class="sec">SYSTEM LOGS</div>
+        </div>
+        <div class="viewer" id="viewer">
+          <div class="empty">اختاروا ملفاً من القائمة لعرض محتواه</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+      <div class="bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="title">POWER DISTRIBUTION CORE — RESET</div>
+      </div>
+      <div class="codeform">
+        <div class="codeinfo">
+          <div class="msg">
+            «تم رصد تضارب في وحدات توزيع الطاقة الفرعية. لإعادة ضبط وحدة التحكم الأساسية
+            <b>(Power Distribution Core)</b>، أدخلوا رمز إعادة الضبط.»
+          </div>
+          <div class="hintline">⚠ النظام يطلب الرمز <b style="color:var(--white)">بصيغته الثنائية كما وجدتموه بالضبط</b> — بدون أي تحويل.</div>
+        </div>
+        <div class="keypadside">
+          <div class="display" id="disp1"></div>
+          <div class="keypad" id="pad1"></div>
+          <div class="kmsg" id="msg1"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= المحطة 2: التيرمينال ================= -->
+  <section id="st2" class="hidden">
+    <div class="station-head">
+      <div class="path">PATH 02 · ABANDONED WAREHOUSE · FIELD TERMINAL</div>
+      <h2>واجهة الاتصال الميدانية</h2>
+      <p>أمامكم واجهة Terminal متصلة بشبكة الضواحي. مهمتكم: تحديد الجهاز المخترِق، الاتصال به برقم البورت الصحيح، إغلاق الثغرة، ثم إعادة النظام لوضعه الطبيعي. اكتبوا <b style="color:var(--cyan);font-family:var(--mono)">help</b> للبدء.</p>
+    </div>
+
+    <div class="panel terminal">
+      <div class="bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="title">nexus-field-terminal — secure shell</div>
+      </div>
+      <div class="term-out" id="termout"></div>
+      <div class="term-in">
+        <span class="prompt" id="termprompt">nexus@field:~$</span>
+        <input type="text" id="termin" autocomplete="off" spellcheck="false" placeholder="type a command...">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= المحطة 3: إدخال الرمز ================= -->
+  <section id="st3" class="hidden">
+    <div class="station-head">
+      <div class="path">PATH 03 · CITY SQUARE · BILLBOARD CONTROL</div>
+      <h2>لوحة التحكم — الشاشة الرقمية</h2>
+      <p>بعد فكّ إشارات اللقطات الأربع وترتيبها بالشكل الصحيح، أدخلوا الرمز المستخلص لإيقاف الجهاز وإعادة الشاشة لوضعها الطبيعي.</p>
+    </div>
+
+    <div class="panel">
+      <div class="bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="title">BILLBOARD OVERRIDE — AUTH REQUIRED</div>
+      </div>
+      <div class="codeform">
+        <div class="codeinfo">
+          <div class="msg">
+            «تم اكتشاف بثّ غير مصرّح به على الشاشة الرقمية.
+            لإيقاف مصدر البث، أدخلوا <b>رمز الإيقاف</b> الناتج عن تحليل اللقطات.»
+          </div>
+          <div class="hintline">🛈 تذكير: الرمز ناتج عن ترتيب اللقطات الأربع ترتيباً صحيحاً ثم فكّ الإشارة.</div>
+        </div>
+        <div class="keypadside">
+          <div class="display" id="disp3"></div>
+          <div class="keypad" id="pad3"></div>
+          <div class="kmsg" id="msg3"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="foot">NEXUS MUNICIPAL SYSTEM · ORCHID CITY · EMERGENCY RESPONSE UNIT</footer>
+</div>
+
+<!-- شاشة القفل -->
+<div class="lockscreen" id="lockscreen">
+  <div class="box">
+    <div class="icon" id="lockicon">⏻</div>
+    <h3 id="locktitle">المحطة مقفلة مؤقتاً</h3>
+    <p id="lockdesc">نيكسوس يعيد توجيه الحماية… يُعاد فتح المحطة خلال:</p>
+    <div class="big" id="lockcount">--:--</div>
+  </div>
+</div>
+
+<!-- شاشة النجاح -->
+<div class="success" id="success">
+  <div class="box">
+    <div class="ring">✓</div>
+    <h3 id="suctitle">تمّت العملية بنجاح</h3>
+    <p id="sucdesc"></p>
+    <div class="stamp">MISSION COMPLETE — NEXUS RESTORED</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   محتوى ملفات السجل — المحطة 1
+   الملف رقم 5 (recovery_restore.log) فيه الرمز:
+   القيمة الوحيدة المكتوبة بالصفر والواحد فقط = core_sync_seed
+   ============================================================ */
+const LOG_FILES = [
+{
+name:"boot_sequence.log", size:"4.2 KB", date:"2026-06-28 03:11",
+body:`[03:11:02] NEXUS core boot .......... OK
+[03:11:04] loading city modules:
+  - power_grid ................ OK
+  - traffic_ctrl .............. OK
+  - elevators ................. OK
+  - public_screens ............ WARN (see net_watchdog.log)
+[03:11:09] handshake with 14 grid nodes ... OK
+[03:11:10] system state: NOMINAL
+# ملاحظة: إقلاع طبيعي، لا شيء غير معتاد هنا.`
+},
+{
+name:"update_v23_install.log", size:"11.8 KB", date:"2024-05-14 22:40",
+body:`== INSTALL: protocol 'v2.3' — Distribution Efficiency ==
+[22:40:11] downloading package v2.3 ........ OK
+[22:41:37] applying to power subunits ...... OK (units 1-9)
+[22:41:52] applying to power subunits ...... PARTIAL (units 10-14)
+[22:42:03] WARN: units 10-14 accepted patch
+           with deferred activation.
+# تحديث تجريبي لتحسين توزيع الطاقة —
+# لاحظوا: بعض الوحدات قبلت التحديث "بتفعيل مؤجّل".`
+},
+{
+name:"power_grid_sync.log", size:"7.6 KB", date:"2026-06-30 02:10",
+body:`[02:10:00] sync pulse -> all grid nodes
+[02:12:44] node 11 (warehouse district): latency spike 380ms
+[02:14:00] node 11: UNEXPECTED STATE CHANGE
+[02:14:00] power drop — sector: WAREHOUSES
+[02:18:00] node 11: state restored (no operator action)
+[02:18:01] duration of anomaly: 240.0 seconds exactly
+# انقطاع منطقة المستودعات — 4 دقايق بالضبط. مطابق للبلاغ رقم 1.`
+},
+{
+name:"rollback_report.log", size:"5.1 KB", date:"2024-05-21 09:15",
+body:`== ROLLBACK: v2.3 -> v2.2-stable ==
+[09:15:20] reverting main core ............ OK
+[09:15:58] reverting subunits 1-9 ......... OK
+[09:16:31] reverting subunits 10-14 ....... TIMEOUT
+[09:16:31] retry (1/3) .................... TIMEOUT
+[09:16:55] retry (2/3) .................... SKIPPED BY OPERATOR
+[09:17:00] rollback marked "COMPLETE" (manual override)
+# التراجع عن التحديث ما اكتمل فعلياً بالوحدات 10-14.
+# في كود من v2.3 لسا شغال بالخلفية.`
+},
+{
+name:"recovery_restore.log", size:"3.4 KB", date:"2024-05-21 09:30",
+body:`== RECOVERY SNAPSHOT — v2.2-stable ==
+restore_point .......... v2.2-stable
+snapshot_id ............ RC-7741-OD
+grid_nodes ............. 14
+checksum_a ............. 8F3C21
+core_sync_seed ......... 101101
+uptime_ratio ........... 0.982
+mirror_port ............ 8443
+integrity .............. VERIFIED
+# نقطة استعادة تم إنشاؤها بعد التراجع عن تحديث v2.3
+# جميع القيم أعلاه مأخوذة من لحظة الاستعادة نفسها.`
+},
+{
+name:"traffic_ctrl.log", size:"9.3 KB", date:"2026-06-29 17:05",
+body:`[17:05:12] intersections online: 62/62
+[17:05:12] adaptive timing: ENABLED
+[17:22:40] minor recalibration — sector C
+[19:44:07] pedestrian sensors: OK
+# لا توجد أحداث غير معتادة بحركة المرور خلال آخر 72 ساعة.`
+},
+{
+name:"elevator_diag.log", size:"6.0 KB", date:"2026-06-29 11:30",
+body:`[11:30:00] daily diagnostic — 210 elevators
+[11:30:41] all units responded
+[11:31:02] firmware versions: consistent (v2.2-stable)
+[11:31:02] anomalies: NONE
+# تشخيص المصاعد سليم. النسخة الموحدة v2.2-stable على كل الوحدات.`
+},
+{
+name:"net_watchdog.log", size:"8.8 KB", date:"2026-06-30 03:00",
+body:`[02:09:12] inbound attempt -> substation wireless ctrl
+           source: UNREGISTERED (external device)
+           protocol: LEGACY-SUBURB (deprecated)
+[02:09:14] attempt logged. no active block rule.
+[03:00:00] public_screens: unscheduled content push
+           target: central square billboard
+           origin: INTERNAL CREDENTIALS (full access)
+[03:00:12] content push ended (12.0 s)
+# محاولتين مختلفتين تماماً بنفس الليلة:
+# وحدة خارجية على بروتوكول قديم + صلاحيات داخلية على الشاشات.`
+},
+{
+name:"error_dump_0412.log", size:"14.5 KB", date:"2026-06-27 04:12",
+body:`[04:12:33] EXC subunit-12: scheduler drift +1.8s
+[04:12:33] EXC subunit-13: memory checksum mismatch
+[04:12:34] EXC subunit-13: self-corrected
+[04:12:40] pattern match: errors cluster in units 10-14 only
+[04:12:41] recommended action: FULL AUDIT (pending since 14 months)
+# الأخطاء الصغيرة كلها متركزة بالوحدات يلي ما رجعت
+# لإصدارها القديم بالكامل بعد التراجع عن v2.3.`
+},
+{
+name:"maintenance_sched.log", size:"2.9 KB", date:"2026-06-01 08:00",
+body:`scheduled full audit ....... every 6 months
+last full audit ............ 14 months ago
+reason for delay ........... budget reduction (municipal decision)
+next planned audit ......... NOT SCHEDULED
+# الفحص الشامل مؤجّل من 14 شهر بسبب تقليص الموازنة.`
+}
+];
+
+/* ============================================================
+   المنطق العام
+   ============================================================ */
+const params = new URLSearchParams(location.search);
+const mode = params.get("m"); // 1 | 2 | 3 | null
+const $ = id => document.getElementById(id);
+
+function showSection(){
+  if(mode==="1") $("st1").classList.remove("hidden");
+  else if(mode==="2") $("st2").classList.remove("hidden");
+  else if(mode==="3") $("st3").classList.remove("hidden");
+  else { $("landing").classList.remove("hidden"); $("timerchip").style.display="none"; }
+}
+showSection();
+
+/* ---------- العداد الزمني ---------- */
+const OPEN_MS  = CONFIG.openMinutes  * 60000;
+const CLOSE_MS = CONFIG.closedMinutes* 60000;
+const CYCLE_MS = OPEN_MS + CLOSE_MS;
+
+function getPhase(){
+  if(!CONFIG.startTime) return {state:"free"};
+  const start = new Date(CONFIG.startTime).getTime();
+  if(isNaN(start)) return {state:"free"};
+  const el = Date.now() - start;
+  if(el < 0) return {state:"waiting", rem:-el};
+  if(el >= CONFIG.cycles * CYCLE_MS) return {state:"free"};
+  const inCycle = el % CYCLE_MS;
+  if(inCycle < OPEN_MS) return {state:"open", rem: OPEN_MS - inCycle};
+  return {state:"closed", rem: CYCLE_MS - inCycle};
+}
+
+function fmt(ms){
+  const s = Math.max(0, Math.ceil(ms/1000));
+  const m = Math.floor(s/60), r = s%60;
+  return String(m).padStart(2,"0")+":"+String(r).padStart(2,"0");
+}
+
+function tick(){
+  if(!mode) return;
+  const p = getPhase();
+  const chip = $("timerchip"), lbl=$("timerlbl"), val=$("timerval");
+  const lock = $("lockscreen");
+  chip.classList.remove("closed","waiting");
+
+  if(p.state==="free"){
+    lbl.textContent="المحطة نشطة"; val.textContent="∞";
+    lock.classList.remove("show");
+  }
+  else if(p.state==="open"){
+    lbl.textContent="الوقت المتبقي"; val.textContent=fmt(p.rem);
+    lock.classList.remove("show");
+  }
+  else if(p.state==="closed"){
+    chip.classList.add("closed");
+    lbl.textContent="مقفلة"; val.textContent=fmt(p.rem);
+    lock.classList.remove("waitmode");
+    $("lockicon").textContent="⏻";
+    $("locktitle").textContent="المحطة مقفلة مؤقتاً";
+    $("lockdesc").textContent="نيكسوس يعيد توجيه أنظمة الحماية… يُعاد فتح المحطة خلال:";
+    $("lockcount").textContent=fmt(p.rem);
+    lock.classList.add("show");
+  }
+  else if(p.state==="waiting"){
+    chip.classList.add("waiting");
+    lbl.textContent="تفتح خلال"; val.textContent=fmt(p.rem);
+    lock.classList.add("waitmode");
+    $("lockicon").textContent="◷";
+    $("locktitle").textContent="المحطة لم تُفعَّل بعد";
+    $("lockdesc").textContent="بوابة الوصول ستُفتح تلقائياً خلال:";
+    $("lockcount").textContent=fmt(p.rem);
+    lock.classList.add("show");
+  }
+}
+setInterval(tick, 500); tick();
+
+/* ---------- شاشة النجاح ---------- */
+function win(title, desc){
+  $("suctitle").textContent = title;
+  $("sucdesc").textContent  = desc;
+  $("success").classList.add("show");
+}
+
+/* ---------- لوحة الأرقام ---------- */
+function buildKeypad(padId, dispId, msgId, checkFn, maxLen){
+  const pad=$(padId), disp=$(dispId), msg=$(msgId);
+  const keys=["1","2","3","4","5","6","7","8","9","مسح","0","⌫"];
+  keys.forEach(k=>{
+    const b=document.createElement("button");
+    b.textContent=k;
+    if(k==="مسح"){b.classList.add("fn"); b.onclick=()=>{disp.textContent=""; msg.textContent="";};}
+    else if(k==="⌫"){b.classList.add("fn"); b.onclick=()=>{disp.textContent=disp.textContent.slice(0,-1);};}
+    else b.onclick=()=>{ if(disp.textContent.length<maxLen) disp.textContent+=k; };
+    pad.appendChild(b);
+  });
+  const go=document.createElement("button");
+  go.textContent="تأكيد الرمز"; go.classList.add("go");
+  go.style.gridColumn="1 / -1";
+  go.onclick=()=>{
+    msg.className="kmsg";
+    if(checkFn(disp.textContent.trim())){
+      msg.classList.add("ok"); msg.textContent="✓ الرمز صحيح — جارٍ إعادة الضبط…";
+    }else{
+      msg.classList.add("err"); msg.textContent="✗ رمز غير صحيح — أعيدوا المحاولة";
+      disp.classList.add("shake");
+      setTimeout(()=>disp.classList.remove("shake"), 500);
+    }
+  };
+  pad.appendChild(go);
+}
+
+/* ============================================================
+   المحطة 1 — متصفح الملفات
+   ============================================================ */
+if(mode==="1"){
+  const list=$("filelist"), viewer=$("viewer");
+  LOG_FILES.forEach((f,i)=>{
+    const d=document.createElement("div");
+    d.className="file";
+    d.innerHTML=`<span>${f.name}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+    d.onclick=()=>{
+      list.querySelectorAll(".file").forEach(x=>x.classList.remove("active"));
+      d.classList.add("active");
+      const esc = f.body
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+        .replace(/(#.*)/g,'<span class="c">$1</span>')
+        .replace(/\b(OK|VERIFIED|ENABLED|NOMINAL)\b/g,'<span class="k">$1</span>')
+        .replace(/\b(WARN|TIMEOUT|PARTIAL|EXC|SKIPPED BY OPERATOR|UNEXPECTED STATE CHANGE|UNREGISTERED|NOT SCHEDULED)\b/g,'<span class="v">$1</span>');
+      viewer.innerHTML=`<div class="fname">${f.name}</div>
+        <div class="fmeta">${f.size} · last modified ${f.date}</div>
+        <pre>${esc}</pre>`;
+    };
+    list.appendChild(d);
+  });
+  buildKeypad("pad1","disp1","msg1", v => v===CONFIG.code1, 12);
+  // نجاح المحطة 1
+  const oldCheck = $("pad1").querySelector(".go").onclick;
+  $("pad1").querySelector(".go").onclick=()=>{
+    const disp=$("disp1"), msg=$("msg1");
+    msg.className="kmsg";
+    if(disp.textContent.trim()===CONFIG.code1){
+      msg.classList.add("ok"); msg.textContent="✓ الرمز صحيح";
+      setTimeout(()=>win(
+        "تمت إعادة ضبط وحدة التوزيع",
+        "أزال النظام بقايا كود التحديث v2.3 من الوحدات الفرعية، وعادت شبكة الطاقة لمسارها الصحيح. مدينة أوركيد بأمان — أحسنتم أيها المحققون."
+      ), 900);
+    }else{
+      msg.classList.add("err"); msg.textContent="✗ رمز غير صحيح — أعيدوا المحاولة";
+      disp.classList.add("shake"); setTimeout(()=>disp.classList.remove("shake"),500);
+    }
+  };
+}
+
+/* ============================================================
+   المحطة 2 — التيرمينال
+   ============================================================ */
+if(mode==="2"){
+  const out=$("termout"), inp=$("termin"), promptEl=$("termprompt");
+  const IP="192.168.7.44";
+  let state={connected:false, patched:false, awaitingPort:false, done:false};
+
+  function print(text, cls="sys"){
+    const d=document.createElement("div");
+    d.className="ln "+cls;
+    d.textContent=text;
+    out.appendChild(d);
+    out.scrollTop=out.scrollHeight;
+  }
+  function printHTML(html, cls="sys"){
+    const d=document.createElement("div");
+    d.className="ln "+cls;
+    d.innerHTML=html;
+    out.appendChild(d);
+    out.scrollTop=out.scrollHeight;
+  }
+
+  print("NEXUS FIELD TERMINAL — secure shell v1.4");
+  print("متصل بشبكة محطات الضواحي. اكتب help لعرض الأوامر المتاحة.","warn");
+
+  const HELP =
+`الأوامر المتاحة:
+  help              عرض هذه القائمة
+  scan              فحص الشبكة والبحث عن أجهزة غريبة
+  connect <IP>      الاتصال بجهاز عبر عنوانه
+  patch             إغلاق الثغرة (يتطلب اتصال ناجح)
+  restore           إعادة النظام لوضعه الطبيعي (بعد إغلاق الثغرة)
+  status            عرض حالة المهمة
+  clear             مسح الشاشة`;
+
+  function handle(cmdRaw){
+    const cmd=cmdRaw.trim();
+    if(!cmd) return;
+
+    // وضع إدخال البورت
+    if(state.awaitingPort){
+      print(cmd,"cmdl");
+      if(cmd===CONFIG.code2Port){
+        state.awaitingPort=false; state.connected=true;
+        promptEl.textContent="nexus@field:~$";
+        print("PORT ACCEPTED ✓","okl");
+        print("تم الاتصال بالجهاز المخترِق بنجاح.","okl");
+        print("تحذير: الجهاز مرتبط ببروتوكول LEGACY-SUBURB — الثغرة لا تزال مفتوحة.","warn");
+        printHTML('الخطوة التالية: اكتبوا <span class="hl">patch</span> لإغلاق الثغرة.');
+      }else{
+        print(cmd? "PORT REJECTED ✗ — رقم بورت خاطئ.":"", "errl");
+        print("تلميح: الرمز هو وقت الانقطاع بالدقائق، مكرراً مرتين.","warn");
+        printHTML('أعيدوا المحاولة، أو اكتبوا <span class="hl">exit</span> للإلغاء.');
+        if(cmd==="exit"){ state.awaitingPort=false; promptEl.textContent="nexus@field:~$"; print("تم إلغاء محاولة الاتصال."); }
+      }
+      return;
+    }
+
+    print(cmd,"cmdl");
+    const [c, arg]=cmd.split(/\s+/);
+
+    switch(c.toLowerCase()){
+      case "help": print(HELP); break;
+
+      case "clear": out.innerHTML=""; break;
+
+      case "status":
+        print(`حالة المهمة:
+  [${state.connected?"✓":" "}] الاتصال بالجهاز المخترِق
+  [${state.patched?"✓":" "}] إغلاق الثغرة
+  [${state.done?"✓":" "}] إعادة النظام`);
+        break;
+
+      case "scan":
+        print("جارٍ فحص الشبكة .....");
+        setTimeout(()=>{
+          printHTML(`نتائج الفحص:
+  node-10  substation ctrl ......... <span class="okl">TRUSTED</span>
+  node-11  substation ctrl ......... <span class="okl">TRUSTED</span>
+  node-12  substation ctrl ......... <span class="okl">TRUSTED</span>
+  <span class="errl">UNKNOWN  handmade device .... ${IP}  ⚠ UNREGISTERED</span>
+
+جهاز غير مسجّل يبث على بروتوكول قديم — هذا هو جهاز المبتزّين.`);
+          printHTML(`للاتصال به: <span class="hl">connect ${IP}</span>`);
+        },800);
+        break;
+
+      case "connect":
+        if(!arg){ print("الصيغة: connect <IP> — مثال: connect "+IP,"errl"); break; }
+        if(arg!==IP){ print("فشل الاتصال: لا يوجد جهاز على هذا العنوان. جرّبوا scan أولاً.","errl"); break; }
+        if(state.connected){ print("أنتم متصلون بالجهاز أساساً. الخطوة التالية: patch","warn"); break; }
+        print("محاولة الاتصال بـ "+IP+" .....");
+        setTimeout(()=>{
+          print("الجهاز يطلب المصادقة.","warn");
+          printHTML('أدخلوا <span class="hl">رقم البورت (كلمة المرور)</span>:');
+          state.awaitingPort=true;
+          promptEl.textContent="PORT:";
+        },700);
+        break;
+
+      case "patch":
+        if(!state.connected){ print("لا يوجد اتصال نشط. استخدموا scan ثم connect أولاً.","errl"); break; }
+        if(state.patched){ print("الثغرة مغلقة أساساً. الخطوة التالية: restore","warn"); break; }
+        print("جارٍ إغلاق بروتوكول LEGACY-SUBURB .....");
+        setTimeout(()=>{
+          state.patched=true;
+          print("PATCH APPLIED ✓ — الثغرة أُغلقت، وانقطع اتصال المبتزّين نهائياً.","okl");
+          printHTML('الخطوة الأخيرة: اكتبوا <span class="hl">restore</span> لإعادة النظام لوضعه الطبيعي.');
+        },900);
+        break;
+
+      case "restore":
+        if(!state.patched){ print("لا يمكن إعادة النظام قبل إغلاق الثغرة (patch).","errl"); break; }
+        if(state.done) break;
+        print("جارٍ إعادة محطات الضواحي للتشغيل الآمن .....");
+        setTimeout(()=>{
+          state.done=true;
+          print("SYSTEM RESTORED ✓","okl");
+          setTimeout(()=>win(
+            "تم قطع اتصال المبتزّين وإغلاق الثغرة",
+            "أعدتم محطات الضواحي للتشغيل الآمن، ولم يعد بإمكان أي جهة خارجية الوصول لشبكة نيكسوس عبر البروتوكول القديم. مدينة أوركيد بأمان — أحسنتم أيها المحققون."
+          ),700);
+        },900);
+        break;
+
+      case "exit": print("لا يوجد جلسة لإنهائها."); break;
+
+      default:
+        print(`أمر غير معروف: ${c} — اكتبوا help لعرض الأوامر.`,"errl");
+    }
+  }
+
+  inp.addEventListener("keydown", e=>{
+    if(e.key==="Enter"){ handle(inp.value); inp.value=""; }
+  });
+  document.querySelector(".terminal").addEventListener("click", ()=>inp.focus());
+}
+
+/* ============================================================
+   المحطة 3 — إدخال الرمز فقط
+   ============================================================ */
+if(mode==="3"){
+  buildKeypad("pad3","disp3","msg3", v=>false, 12);
+  $("pad3").querySelector(".go").onclick=()=>{
+    const disp=$("disp3"), msg=$("msg3");
+    msg.className="kmsg";
+    if(disp.textContent.trim()===CONFIG.code3){
+      msg.classList.add("ok"); msg.textContent="✓ الرمز صحيح";
+      setTimeout(()=>win(
+        "توقّف البث غير المصرّح به",
+        "أُلغيت صلاحيات المهندس السابق نهائياً، وعادت الشاشة الرقمية لعرض محتواها الطبيعي. مدينة أوركيد بأمان — أحسنتم أيها المحققون."
+      ),900);
+    }else{
+      msg.classList.add("err"); msg.textContent="✗ رمز غير صحيح — أعيدوا المحاولة";
+      disp.classList.add("shake"); setTimeout(()=>disp.classList.remove("shake"),500);
+    }
+  };
+}
+</script>
+</body>
+</html>
