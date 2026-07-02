@@ -291,7 +291,7 @@ const CONFIG = {
   // 🔑 رموز المحطات
   code1: "101101",          // المحطة 1: الرمز الثنائي المخفي بملف الاستعادة
                             // (إذا غيّرته، غيّر نفس القيمة بمحتوى ملف recovery_restore.log تحت)
-  code2Port: "44",          // المحطة 2: رقم البورت (4 دقايق مكررة مرتين)
+  code2Port: "8083",        // المحطة 2: رقم البورت — بينكشف داخل التيرمينال عبر أمر ports <IP> على جهاز المخترِق
   code3: "3007",            // المحطة 3: الرمز الناتج عن فك شيفرة مورس — غيّرو حسب لغزك
 };
 </script>
@@ -730,6 +730,11 @@ if(mode==="1"){
 if(mode==="2"){
   const out=$("termout"), inp=$("termin"), promptEl=$("termprompt");
   const IP="192.168.7.44";
+  const DEVICES={
+    "192.168.7.31":{intruder:false},
+    "192.168.7.44":{intruder:true},
+    "192.168.7.52":{intruder:false},
+  };
   let state={connected:false, patched:false, awaitingPort:false, done:false};
 
   function print(text, cls="sys"){
@@ -756,6 +761,8 @@ if(mode==="2"){
 `Available commands:
   help              show this list
   scan              scan the network for suspicious devices
+  activity <IP>     inspect a device's recent activity log
+  ports <IP>        scan a device's open ports
   connect <IP>      connect to a device by its address
   patch             close the vulnerability (requires an active connection)
   restore           restore the system to normal (after closing the vulnerability)
@@ -778,7 +785,6 @@ if(mode==="2"){
         printHTML('Next step: type <span class="hl">patch</span> to close the vulnerability.');
       }else{
         print(cmd? "PORT REJECTED ✗ — wrong port number.":"", "errl");
-        print("Hint: the code is the outage duration in minutes, repeated twice.","warn");
         printHTML('Try again, or type <span class="hl">exit</span> to cancel.');
         if(cmd==="exit"){ state.awaitingPort=false; promptEl.textContent="nexus@field:~$"; print("Connection attempt canceled."); }
       }
@@ -804,21 +810,73 @@ if(mode==="2"){
         print("Scanning network .....");
         setTimeout(()=>{
           printHTML(`Scan results:
-  node-10  substation ctrl ......... <span class="okl">TRUSTED</span>
-  node-11  substation ctrl ......... <span class="okl">TRUSTED</span>
-  node-12  substation ctrl ......... <span class="okl">TRUSTED</span>
-  <span class="errl">UNKNOWN  handmade device .... ${IP}  ⚠ UNREGISTERED</span>
+  node-10          substation ctrl ......... <span class="okl">TRUSTED</span>
+  node-11          substation ctrl ......... <span class="okl">TRUSTED</span>
+  node-12          substation ctrl ......... <span class="okl">TRUSTED</span>
+  <span class="errl">192.168.7.31     unregistered device ..... UNVERIFIED</span>
+  <span class="errl">192.168.7.44     unregistered device ..... UNVERIFIED</span>
+  <span class="errl">192.168.7.52     unregistered device ..... UNVERIFIED</span>
 
-An unregistered device is broadcasting on a legacy protocol — this is the extortionists' device.`);
-          printHTML(`To connect: <span class="hl">connect ${IP}</span>`);
+3 unregistered devices detected on the network.`);
+          printHTML(`Use <span class="hl">activity &lt;IP&gt;</span> to inspect a device before deciding which one to connect to.`);
+        },800);
+        break;
+
+      case "activity":
+        if(!arg){ print("Usage: activity <IP> — example: activity "+IP,"errl"); break; }
+        if(!DEVICES[arg]){ print("No activity log found for this address. Try scan first.","errl"); break; }
+        print("Pulling activity log for "+arg+" .....");
+        setTimeout(()=>{
+          if(DEVICES[arg].intruder){
+            printHTML(`Activity log — ${arg}
+  02:07:55  join request .......... substation-wifi (unauthorized)
+  02:07:56  auth attempt #1 ........ <span class="errl">FAILED</span>
+  02:08:10  auth attempt #2 ........ <span class="errl">FAILED</span>
+  02:09:14  protocol downgrade ..... LEGACY-SUBURB (deprecated)
+  02:09:15  control-channel probe .. substation ctrl (nodes 10-12)
+
+<span class="errl">Repeated control-channel probing detected — this is the intrusion point.</span>`);
+            printHTML(`Next: run <span class="hl">ports ${arg}</span> to find its open port.`);
+          }else{
+            printHTML(`Activity log — ${arg}
+  join request .......... substation-wifi (guest profile)
+  authenticated .......... guest / read-only
+  disconnected (idle timeout)
+
+<span class="okl">No control-channel access attempted — appears harmless.</span>`);
+          }
+        },700);
+        break;
+
+      case "ports":
+        if(!arg){ print("Usage: ports <IP> — example: ports "+IP,"errl"); break; }
+        if(!DEVICES[arg]){ print("No route to this address. Try scan first.","errl"); break; }
+        print("Scanning ports on "+arg+" .....");
+        setTimeout(()=>{
+          if(DEVICES[arg].intruder){
+            printHTML(`Port scan: ${arg}
+  21/tcp    closed
+  22/tcp    closed
+  <span class="errl">${CONFIG.code2Port}/tcp   open   (legacy-suburb ctrl)</span>
+
+Open port detected. Use this port number to authenticate: <span class="hl">connect ${arg}</span>`);
+          }else{
+            printHTML(`Port scan: ${arg}
+  21/tcp    closed
+  22/tcp    closed
+  80/tcp    closed
+
+No open control ports on this device.`);
+          }
         },800);
         break;
 
       case "connect":
         if(!arg){ print("Usage: connect <IP> — example: connect "+IP,"errl"); break; }
-        if(arg!==IP){ print("Connection failed: no device at this address. Try scan first.","errl"); break; }
+        if(!DEVICES[arg]){ print("Connection failed: no device at this address. Try scan first.","errl"); break; }
+        if(!DEVICES[arg].intruder){ print("Connection refused: device authenticates as a harmless guest — this is not the intrusion point.","errl"); break; }
         if(state.connected){ print("You're already connected to the device. Next step: patch","warn"); break; }
-        print("Attempting to connect to "+IP+" .....");
+        print("Attempting to connect to "+arg+" .....");
         setTimeout(()=>{
           print("The device is requesting authentication.","warn");
           printHTML('Enter the <span class="hl">port number (password)</span>:');
