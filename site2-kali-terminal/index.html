@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kali@kali: ~</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="term-window">
+
+  <div class="term-titlebar">
+    <span class="tdot tdot-red"></span>
+    <span class="tdot tdot-yellow"></span>
+    <span class="tdot tdot-green"></span>
+    <span class="term-title-text" id="term-title">kali@kali: ~</span>
+  </div>
+
+  <div class="term-body" id="term-body">
+    <div id="term-output"></div>
+
+    <div id="local-prompt">
+      <div class="ps1-line1">
+        <span class="c-blue">┌──(</span><span class="c-white">kali㉿kali</span><span class="c-blue">)-[</span><span class="c-blue" id="cwd-label">~</span><span class="c-blue">]</span>
+      </div>
+      <div class="ps1-line2">
+        <span class="c-blue">└─$ </span><input id="local-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Terminal input">
+      </div>
+    </div>
+
+    <div id="device-prompt" hidden>
+      <div class="ps1-line2">
+        <span class="c-yellow">device&gt; </span><input id="device-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Device input">
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

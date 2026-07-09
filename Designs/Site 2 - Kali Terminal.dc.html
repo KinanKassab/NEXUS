@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:#0e0e10;font-family:"JetBrains Mono",ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;color:#d0d0d0}
+a{color:#5f87ff;text-decoration:none}a:hover{text-decoration:underline}
+input{font-family:inherit}
+::selection{background:#39415a}
+</style>
+</helmet>
+<div style="height:100vh;width:100%;display:flex;flex-direction:column;background:#0e0e10;overflow:hidden">
+
+  <div style="display:flex;align-items:center;height:34px;padding:0 12px;background:#17171d;border-bottom:1px solid #26262e;flex:none;gap:8px">
+    <span style="width:12px;height:12px;border-radius:50%;background:#ec6a5e"></span>
+    <span style="width:12px;height:12px;border-radius:50%;background:#f4bf4f"></span>
+    <span style="width:12px;height:12px;border-radius:50%;background:#61c554"></span>
+    <span style="margin:0 auto;font-size:12px;color:#9a9aa5">kali@kali: ~</span>
+  </div>
+
+  <div ref="{{ termRef }}" onClick="{{ focusTerm }}" style="flex:1;overflow:auto;padding:14px 16px 20px;font-size:13px;line-height:1.55;background:#0e0e10;cursor:text">
+    <sc-for list="{{ lines }}" as="ln" hint-placeholder-count="1">
+      <div style="white-space:pre-wrap;word-break:break-word">
+        <sc-for list="{{ ln.segs }}" as="sg" hint-placeholder-count="1">
+          <span style="color:{{ sg.color }}">{{ sg.text }}</span>
+        </sc-for>
+      </div>
+    </sc-for>
+
+    <sc-if value="{{ localMode }}" hint-placeholder-val="{{ true }}"><span style="display:contents">
+      <div style="margin-top:2px;white-space:pre-wrap;word-break:break-word"><span style="color:#5f87ff">┌──(</span><span style="color:#ffffff">kali㉿kali</span><span style="color:#5f87ff">)-[</span><span style="color:#5f87ff">{{ cwd }}</span><span style="color:#5f87ff">]</span></div>
+      <div style="display:flex;align-items:baseline"><span style="color:#5f87ff;white-space:pre">└─$ </span><input ref="{{ inputRef }}" value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" autofocus autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1;min-width:2ch;background:transparent;border:none;outline:none;color:#e6e6e6;font:inherit;caret-color:#e6e6e6;padding:0"/></div>
+    </span></sc-if>
+
+    <sc-if value="{{ deviceMode }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:baseline"><span style="color:#e6b450;white-space:pre">device&gt; </span><input ref="{{ inputRef }}" value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1;min-width:2ch;background:transparent;border:none;outline:none;color:#e6e6e6;font:inherit;caret-color:#e6e6e6;padding:0"/></div>
+    </sc-if>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;targetIp&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;10.8.0.66&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;الحل السري&quot;},&quot;serverIp&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;10.8.0.2&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;الحل السري&quot;},&quot;oldPassword&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;relay-default&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;الحل السري&quot;},&quot;finalCode&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;NX-7C4E&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;الحل السري&quot;}}">
+class Component extends DCLogic {
+  state = {
+    lines: [{ segs:[{ text:'Last login: Wed Jul  8 02:31:14 2026 on tty1', color:'#6a6a6a' }] }],
+    input: '', mode:'local', cwd:'~', history:[], histIdx:0,
+    devPwChanged:false, devProtoOff:false, devSecured:false,
+  };
+
+  componentDidMount(){ this.focus(); }
+  componentDidUpdate(){ if (this._term) this._term.scrollTop = this._term.scrollHeight; }
+  focus(){ if (this._input) this._input.focus(); }
+
+  echoPrompt(lines, cmd){
+    if (this.state.mode === 'device'){
+      lines.push({ segs:[{ text:'device> ', color:'#e6b450' }, { text:cmd, color:'#e6e6e6' }] });
+    } else {
+      const p = this.state.cwd || '~';
+      lines.push({ segs:[{ text:'┌──(', color:'#5f87ff' }, { text:'kali㉿kali', color:'#ffffff' }, { text:')-[', color:'#5f87ff' }, { text:p, color:'#5f87ff' }, { text:']', color:'#5f87ff' }] });
+      lines.push({ segs:[{ text:'└─$ ', color:'#5f87ff' }, { text:cmd, color:'#e6e6e6' }] });
+    }
+  }
+
+  run(raw){
+    const cmd = (raw || '').trim();
+    const lines = [...this.state.lines];
+    const push = (t, c) => String(t).split('\n').forEach(x => lines.push({ segs:[{ text: x === '' ? '\u00a0' : x, color: c || '#d0d0d0' }] }));
+    this.echoPrompt(lines, cmd);
+    let patch = {}, history = this.state.history;
+    if (cmd !== ''){
+      history = [...history, cmd];
+      patch = (this.state.mode === 'device' ? this.doDevice(cmd, push) : this.doLocal(cmd, push)) || {};
+    }
+    if (patch.clear){ this.setState({ lines:[], input:'', history, histIdx:history.length, ...(patch.state || {}) }); return; }
+    this.setState({ lines, input:'', history, histIdx:history.length, ...(patch.state || {}) });
+  }
+
+  connect(push){
+    const ip = this.props.targetIp ?? '10.8.0.66';
+    push('Trying ' + ip + '...');
+    push('Connected to ' + ip + '.');
+    push("Escape character is '^]'.", '#6a6a6a');
+    push('');
+    push('*** ORCHID SUBSTATION — LEGACY LINK (proto v1.0) ***', '#e6b450');
+    push('*** deprecated interface — authentication: NONE     ***', '#e6b450');
+    push('');
+    return { state:{ mode:'device', devPwChanged:false, devProtoOff:false, devSecured:false } };
+  }
+
+  doLocal(cmd, push){
+    let parts = cmd.split(/\s+/);
+    if (parts[0] === 'sudo') parts = parts.slice(1);
+    const c = (parts[0] || '').toLowerCase();
+    const args = parts.slice(1);
+    const ip = this.props.targetIp ?? '10.8.0.66';
+    const isIp = s => /^\d{1,3}(\.\d{1,3}){3}$/.test(s || '');
+    switch (c){
+      case '': return;
+      case 'help': push('GNU bash, version 5.2.15(1)-release\nShell builtins:\n  cd   pwd   echo   export   history   type   which   exit   help\nExternal programs live in /usr/bin — use \'man <name>\' for usage.'); return;
+      case 'clear': return { clear:true };
+      case 'ls': push('Desktop  Documents  Downloads  Pictures  tools'); return;
+      case 'pwd': push(this.state.cwd === '~' ? '/home/kali' : ('/home/kali/' + this.state.cwd.replace(/^~\//,''))); return;
+      case 'cd': { let d = args[0]; let cwd; if (!d || d === '~' || d === '/home/kali' || d === '..') cwd = '~'; else cwd = '~/' + d.replace(/^~\//,'').replace(/^\//,''); return { state:{ cwd } }; }
+      case 'whoami': push('kali'); return;
+      case 'id': push('uid=1000(kali) gid=1000(kali) groups=1000(kali),27(sudo)'); return;
+      case 'history': { const h = this.state.history; push(h.length ? h.map((x,i) => String(i+1).padStart(4) + '  ' + x).join('\n') : '  (empty)'); return; }
+      case 'ifconfig': case 'ip':
+        push('eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet 10.8.0.5  netmask 255.255.255.0  broadcast 10.8.0.255\n        ether 08:00:27:1c:aa:5e  txqueuelen 1000  (Ethernet)\nlo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536\n        inet 127.0.0.1  netmask 255.0.0.0'); return;
+      case 'man': { const m = args[0]; const d = { nmap:'nmap(1) — Network exploration tool and security scanner\nUsage: nmap [scan-type] [options] {target}', nc:'ncat(1) — concatenate and redirect sockets\nUsage: nc [options] host port', ncat:'ncat(1) — concatenate and redirect sockets\nUsage: ncat [options] host port', telnet:'telnet(1) — user interface to the TELNET protocol\nUsage: telnet host [port]', ping:'ping(8) — send ICMP ECHO_REQUEST to network hosts\nUsage: ping [options] destination', ssh:'ssh(1) — OpenSSH remote login client\nUsage: ssh [user@]hostname [command]' }; push(m && d[m] ? d[m] : ('No manual entry for ' + (m || ''))); return; }
+      case 'which': case 'type': { const t = args[0] || ''; const k = ['nmap','nc','ncat','telnet','ssh','ping','ls','cat','ifconfig']; push(k.includes(t) ? ('/usr/bin/' + t) : (t + ': not found')); return; }
+      case 'ping': { const t = args.find(a => !a.startsWith('-')); if (!t){ push('ping: usage error: Destination address required'); return; } if (t === ip){ push('PING ' + ip + ' (' + ip + ') 56(84) bytes of data.\n64 bytes from ' + ip + ': icmp_seq=1 ttl=64 time=1.82 ms\n64 bytes from ' + ip + ': icmp_seq=2 ttl=64 time=1.55 ms\n64 bytes from ' + ip + ': icmp_seq=3 ttl=64 time=1.66 ms\n\n--- ' + ip + ' ping statistics ---\n3 packets transmitted, 3 received, 0% packet loss, time 2003ms'); return; } if (isIp(t)){ push('PING ' + t + ' (' + t + ') 56(84) bytes of data.\nFrom 10.8.0.5 icmp_seq=1 Destination Host Unreachable\n\n--- ' + t + ' ping statistics ---\n3 packets transmitted, 0 received, 100% packet loss'); return; } push('ping: ' + t + ': Name or service not known'); return; }
+      case 'nmap': { const t = args.find(a => !a.startsWith('-') && isIp(a)); if (!t){ push('Nmap: no target hosts specified.\nUsage: nmap [options] {target}'); return; } if (t === ip){ push('Starting Nmap 7.94 ( https://nmap.org )\nNmap scan report for ' + ip + '\nHost is up (0.0017s latency).\nNot shown: 998 closed tcp ports (reset)\nPORT     STATE SERVICE\n23/tcp   open  telnet\n2323/tcp open  legacy-ctrl\n\nNmap done: 1 IP address (1 host up) scanned in 1.71s'); return; } push('Starting Nmap 7.94 ( https://nmap.org )\nNote: Host seems down. If it is really up, but blocking our ping probes, try -Pn\nNmap done: 1 IP address (0 hosts up) scanned in 3.04s'); return; }
+      case 'nc': case 'ncat': case 'netcat': { const host = args.find(a => isIp(a)); const nums = args.filter(a => /^\d+$/.test(a)); const port = nums[nums.length-1]; if (!host || !port){ push('Ncat: usage: nc <host> <port>'); return; } if (host === ip && (port === '23' || port === '2323')) return this.connect(push); if (host === ip){ push('Ncat: Connection refused.'); return; } push('Ncat: No route to host.'); return; }
+      case 'telnet': { const host = args.find(a => isIp(a)); const port = args.find(a => /^\d+$/.test(a)); if (!host){ push('telnet: usage: telnet host [port]'); return; } if (host === ip && (!port || port === '23' || port === '2323')) return this.connect(push); if (host === ip){ push('telnet: Unable to connect to remote host: Connection refused'); return; } push('telnet: could not resolve ' + host + ': Name or service not known'); return; }
+      case 'ssh': { const tg = args.find(a => !a.startsWith('-')) || ''; const host = tg.includes('@') ? tg.split('@')[1] : tg; if (!host){ push('usage: ssh [user@]hostname [command]'); return; } push('ssh: connect to host ' + host + ' port 22: Connection refused'); return; }
+      case 'cat': { const f = args[0]; if (!f){ push('cat: usage: cat <file>'); return; } if (['desktop','documents','downloads','pictures','tools'].includes((f || '').toLowerCase())){ push('cat: ' + f + ': Is a directory'); return; } push('cat: ' + f + ': No such file or directory'); return; }
+      case 'echo': push(args.join(' ')); return;
+      case 'exit': case 'logout': push('\u00a0'); return;
+      default: push('zsh: command not found: ' + c, '#ff6b6b'); return;
+    }
+  }
+
+  setPass(v, old, push){ if (!v){ push('usage: passwd <newpass>'); return; } if (v === old){ push('password unchanged — choose a value different from the current one.', '#e6b450'); return; } push('uplink account password updated.', '#4ade80'); return { state:{ devPwChanged:true } }; }
+  protoOff(push){ push('legacy protocol disabled.', '#4ade80'); return { state:{ devProtoOff:true } }; }
+  protoOn(push){ push('legacy protocol enabled.'); return { state:{ devProtoOff:false } }; }
+  trySecure(push){
+    const st = this.state;
+    if (!st.devPwChanged){ push('[!] refused: uplink still using default credentials.', '#ff6b6b'); return; }
+    if (!st.devProtoOff){ push('[!] refused: legacy protocol still enabled.', '#ff6b6b'); return; }
+    const srv = this.props.serverIp ?? '10.8.0.2';
+    push('› negotiating TLS with ' + srv + ' … ok');
+    push('› uplink re-encrypted (aes-256-gcm)');
+    push('› legacy protocol: DISABLED');
+    push('› uplink account: svc-relay (password rotated)');
+    push('device secured. server access restored under new credentials.', '#4ade80');
+    push('');
+    push('RECOVERY ACCESS CODE:  ' + (this.props.finalCode ?? 'NX-7C4E'), '#4ade80');
+    push('use this code at the final control panel.', '#6a6a6a');
+    return { state:{ devSecured:true } };
+  }
+
+  doDevice(cmd, push){
+    const parts = cmd.split(/\s+/); const c = (parts[0] || '').toLowerCase(); const args = parts.slice(1);
+    const old = this.props.oldPassword ?? 'relay-default';
+    const srv = this.props.serverIp ?? '10.8.0.2';
+    const st = this.state;
+    switch (c){
+      case '': return;
+      case 'help': case '?': push('legacy-ctrl (proto v1.0) — commands:\n  status                 link + uplink status\n  show <link|uplink|proto|cred>\n  set <key> <value>\n  passwd <newpass>       set uplink account password\n  proto <on|off>         legacy protocol state\n  secure                 re-establish encrypted uplink\n  reboot   whoami   exit'); return;
+      case 'status': push('link            : UP  (legacy-ctrl v1.0)\nuplink          : ' + srv + '  [server access relay]\nlegacy protocol : ' + (st.devProtoOff ? 'DISABLED' : 'ENABLED   [!] unauthenticated') + '\nencryption      : ' + (st.devSecured ? 'ON (aes-256-gcm)' : 'OFF       [!]') + '\nuplink account  : svc-relay\nuplink password : ' + (st.devPwChanged ? '(rotated)' : '(default) [!]')); return;
+      case 'show': { const s = (args[0] || '').toLowerCase();
+        if (s === 'cred' || s === 'creds'){ push('uplink account  : svc-relay\nuplink password : ' + (st.devPwChanged ? '********  (rotated)' : old + '  (factory default)')); return; }
+        if (s === 'uplink'){ push('uplink host : ' + srv + '\nrole        : server-access relay\nchannel     : ' + (st.devSecured ? 'encrypted' : 'cleartext [!]')); return; }
+        if (s === 'proto'){ push('protocol : legacy-ctrl v1.0\nauth     : none\nstate    : ' + (st.devProtoOff ? 'disabled' : 'enabled [!]')); return; }
+        if (s === 'link'){ push('link  : UP\nmedia : rj45 -> usb-relay (handmade)'); return; }
+        push('usage: show <link|uplink|proto|cred>'); return; }
+      case 'set': { const k = (args[0] || '').toLowerCase(); const v = args[1];
+        if (['password','pass','cred.password','uplink.password'].includes(k)) return this.setPass(v, old, push);
+        if (['proto','protocol','legacy'].includes(k)){ const vv = (v || '').toLowerCase(); if (vv === 'off') return this.protoOff(push); if (vv === 'on') return this.protoOn(push); push('usage: set proto <on|off>'); return; }
+        if (['encryption','enc','tls','secure'].includes(k)){ if ((v || '').toLowerCase() !== 'off') return this.trySecure(push); push('encryption already off'); return; }
+        push('set: unknown key: ' + (args[0] || '')); return; }
+      case 'passwd': case 'password': case 'pass': return this.setPass(args[0], old, push);
+      case 'proto': case 'protocol': case 'legacy': { const v = (args[0] || '').toLowerCase(); if (v === 'off') return this.protoOff(push); if (v === 'on') return this.protoOn(push); push('usage: proto <on|off>'); return; }
+      case 'disable': case 'close': return this.protoOff(push);
+      case 'secure': case 'encrypt': case 'reconnect': case 'harden': return this.trySecure(push);
+      case 'tls': { if ((args[0] || '').toLowerCase() === 'off'){ push('tls off'); return; } return this.trySecure(push); }
+      case 'reboot': push('resetting legacy link ...\nlink UP.'); return;
+      case 'whoami': push('svc-relay'); return;
+      case 'uptime': push(' 02:41:06 up 37 days,  4:12,  load average: 0.00, 0.01, 0.05'); return;
+      case 'ls': push('firmware  config  uplink'); return;
+      case 'ping': push('ping not permitted on legacy-ctrl'); return;
+      case 'exit': case 'quit': case 'logout': push('Connection closed by foreign host.', '#6a6a6a'); return { state:{ mode:'local' } };
+      default: push('unknown command: ' + c + '   (type ? for a list)', '#ff6b6b'); return;
+    }
+  }
+
+  histPrev(){ const h = this.state.history; if (!h.length) return; let i = this.state.histIdx - 1; if (i < 0) i = 0; this.setState({ histIdx:i, input: h[i] ?? '' }); }
+  histNext(){ const h = this.state.history; let i = this.state.histIdx + 1; if (i >= h.length){ this.setState({ histIdx:h.length, input:'' }); return; } this.setState({ histIdx:i, input: h[i] ?? '' }); }
+
+  renderVals(){
+    return {
+      lines: this.state.lines,
+      input: this.state.input,
+      cwd: this.state.cwd,
+      deviceMode: this.state.mode === 'device',
+      localMode: this.state.mode !== 'device',
+      onInput: (e) => this.setState({ input: e.target.value }),
+      onKey: (e) => { if (e.key === 'Enter'){ e.preventDefault(); this.run(this.state.input); } else if (e.key === 'ArrowUp'){ e.preventDefault(); this.histPrev(); } else if (e.key === 'ArrowDown'){ e.preventDefault(); this.histNext(); } },
+      inputRef: (el) => { this._input = el; },
+      termRef: (el) => { this._term = el; },
+      focusTerm: () => { if (this._input) this._input.focus(); },
+    };
+  }
+}
+</script>
+</body>
+</html>

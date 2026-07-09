@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#e8ebee;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:#1f1f1f}
+a{color:#0b5cad;text-decoration:none}a:hover{color:#0949a0;text-decoration:underline}
+input{font-family:inherit}
+::selection{background:#cfe4fb}
+</style>
+</helmet>
+<div style="height:100vh;width:100%;display:flex;flex-direction:column;background:#fff;overflow:hidden">
+
+  <div style="display:flex;align-items:center;height:38px;padding:0 12px;background:#f6f7f9;border-bottom:1px solid #e6e6e6;flex:none">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:8px"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2h9A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-11Z" fill="#f2c14e" stroke="#d9a72e"/></svg>
+    <span style="font-size:13px;font-weight:600;color:#2a2a2a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">PDC Log Archive — \\NEXUS\logs\pdc</span>
+    <div style="margin-left:auto;display:flex;gap:8px;flex:none">
+      <span style="width:12px;height:12px;border-radius:50%;background:#ecc04d"></span>
+      <span style="width:12px;height:12px;border-radius:50%;background:#5cb85c"></span>
+      <span style="width:12px;height:12px;border-radius:50%;background:#e2665b"></span>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 10px;background:#fbfcfd;border-bottom:1px solid #ececec;flex:none">
+    <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+      <span style="display:flex;gap:2px">
+        <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#b3b3b3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span>
+        <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#cfcfcf"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
+        <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#8a8a8a" style-hover="background:#eef1f4"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg></span>
+      </span>
+    </sc-if>
+    <div style="flex:1;min-width:0;display:flex;align-items:center;height:30px;padding:0 12px;background:#fff;border:1px solid #dfe3e8;border-radius:6px;font-size:12.5px;color:#5a5a5a;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">This PC&nbsp;&nbsp;›&nbsp;&nbsp;NEXUS (\\NEXUS)&nbsp;&nbsp;›&nbsp;&nbsp;logs&nbsp;&nbsp;›&nbsp;&nbsp;<b style="color:#1f1f1f;font-weight:600">pdc</b></div>
+    <div style="display:flex;align-items:center;height:30px;width:180px;max-width:34vw;padding:0 10px;background:#fff;border:1px solid #dfe3e8;border-radius:6px;gap:6px;flex:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+      <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="Search pdc" style="border:none;outline:none;flex:1;min-width:0;font-size:12.5px;background:transparent;color:#1f1f1f"/>
+    </div>
+    <button onClick="{{ openConsole }}" style="display:flex;align-items:center;gap:7px;height:30px;padding:0 12px;background:#0e2233;color:#dbeaf6;border:1px solid #17364d;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none" style-hover="background:#143049">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="6" rx="1.2" fill="#12324a" stroke="#5f9fd6"/><rect x="4" y="14" width="16" height="6" rx="1.2" fill="#12324a" stroke="#5f9fd6"/><circle cx="8" cy="7" r="1.1" fill="#5cd08a"/><circle cx="8" cy="17" r="1.1" fill="#5cd08a"/></svg>
+      <span>Server Console</span>
+    </button>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+      <aside style="width:222px;flex:none;background:#f4f5f7;border-right:1px solid #e6e6e6;padding:12px 8px;overflow:auto;font-size:13px">
+        <div style="padding:4px 8px 6px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#9a9a9a">Quick access</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;color:#8a8a8a">★ Recent</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;color:#8a8a8a">▧ Desktop</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;color:#8a8a8a">▤ Documents</div>
+        <div style="height:12px"></div>
+        <div style="padding:4px 8px 6px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#9a9a9a">This PC</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;color:#3a3a3a">🖧 NEXUS (\\NEXUS)</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px 6px 22px;border-radius:6px;color:#3a3a3a">▸ logs</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px 6px 36px;border-radius:6px;background:#e3edfb;color:#0b5cad;font-weight:600">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2h9A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-11Z" fill="#cfe0f5" stroke="#7aa7d8"/></svg>
+          pdc
+        </div>
+        <div style="height:16px"></div>
+        <button onClick="{{ openConsole }}" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:#0e2233;color:#dbeaf6;border:1px solid #17364d;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#143049">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="6" rx="1.2" fill="#12324a" stroke="#5f9fd6"/><rect x="4" y="14" width="16" height="6" rx="1.2" fill="#12324a" stroke="#5f9fd6"/><circle cx="8" cy="7" r="1.1" fill="#5cd08a"/><circle cx="8" cy="17" r="1.1" fill="#5cd08a"/></svg>
+          Nexus Server Console
+        </button>
+      </aside>
+    </sc-if>
+
+    <main style="flex:1;display:flex;flex-direction:column;min-width:0;background:#fff">
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid #ececec;background:#fbfcfd;font-size:11.5px;color:#9a9a9a;flex:none">
+        <span style="width:18px;flex:none"></span>
+        <span style="flex:1">Name</span>
+        <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}"><span style="display:contents">
+          <span style="width:150px;flex:none">Date modified</span>
+          <span style="width:120px;flex:none">Type</span>
+          <span style="width:72px;flex:none;text-align:right">Size</span>
+        </span></sc-if>
+      </div>
+      <div style="flex:1;overflow:auto">
+        <sc-for list="{{ files }}" as="f" hint-placeholder-count="6">
+          <div onClick="{{ f.onClick }}" onDoubleClick="{{ f.onDbl }}" style="display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:default;border-bottom:1px solid #f5f5f5;background:{{ f.rowBg }}" style-hover="background:#f1f7fe">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex:none"><path d="M6 2.5h8L19 7v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z" fill="#eef2f6" stroke="#9fb0c0"/><path d="M14 2.5V7h5" stroke="#9fb0c0"/><path d="M8 12.5h8M8 15.5h8M8 18.5h5" stroke="#c2cdd8"/></svg>
+            <span style="flex:1;min-width:0;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.name }}</span>
+            <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}"><span style="display:contents">
+              <span style="width:150px;flex:none;font-size:12.5px;color:#6a6a6a">{{ f.modified }}</span>
+              <span style="width:120px;flex:none;font-size:12.5px;color:#6a6a6a">{{ f.type }}</span>
+              <span style="width:72px;flex:none;font-size:12.5px;color:#6a6a6a;text-align:right">{{ f.size }}</span>
+            </span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="height:26px;flex:none;display:flex;align-items:center;gap:16px;padding:0 14px;background:#f6f7f9;border-top:1px solid #e6e6e6;font-size:12px;color:#666">
+        <span>{{ totalCount }} items</span>
+        <sc-if value="{{ selected }}" hint-placeholder-val="{{ false }}"><span style="color:#0b5cad">{{ selected }}</span></sc-if>
+      </div>
+    </main>
+  </div>
+
+  <sc-if value="{{ openObj }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeViewer }}" style="position:fixed;inset:0;background:rgba(18,24,30,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60">
+      <div onClick="{{ stop }}" style="width:min(860px,100%);height:min(76vh,100%);background:#fff;border-radius:9px;box-shadow:0 26px 70px rgba(0,0,0,.4);display:flex;flex-direction:column;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;height:42px;padding:0 14px;background:#f6f7f9;border-bottom:1px solid #e6e6e6;flex:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 2.5h8L19 7v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z" fill="#eef2f6" stroke="#9fb0c0"/><path d="M14 2.5V7h5" stroke="#9fb0c0"/></svg>
+          <span style="font-size:13px;font-weight:600">{{ openName }}</span>
+          <button onClick="{{ closeViewer }}" style="margin-left:auto;width:28px;height:28px;border:none;background:transparent;border-radius:6px;font-size:15px;color:#666;cursor:pointer" style-hover="background:#f0dede;color:#c33">✕</button>
+        </div>
+        <pre style="flex:1;margin:0;padding:18px 20px;overflow:auto;font:13px/1.65 ui-monospace,Menlo,Consolas,monospace;color:#20303a;white-space:pre-wrap;background:#fff">{{ openBody }}</pre>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ consoleOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeConsole }}" style="position:fixed;inset:0;background:rgba(6,10,14,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:70">
+      <div onClick="{{ stop }}" style="width:min(700px,100%);max-height:92vh;overflow:auto;background:#0e1620;border:1px solid #22303e;border-radius:11px;box-shadow:0 30px 80px rgba(0,0,0,.6);color:#cfe0ee;font:13.5px/1.6 ui-monospace,Menlo,Consolas,monospace">
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid #1c2836;background:#0b131c">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="6" rx="1.2" fill="#12324a" stroke="#5f9fd6"/><rect x="4" y="14" width="16" height="6" rx="1.2" fill="#12324a" stroke="#5f9fd6"/><circle cx="8" cy="7" r="1.1" fill="#5cd08a"/><circle cx="8" cy="17" r="1.1" fill="#5cd08a"/></svg>
+          <span style="font-size:12.5px;font-weight:700;letter-spacing:.03em;color:#8fd0ff">NEXUS · POWER DISTRIBUTION CORE</span>
+          <button onClick="{{ closeConsole }}" style="margin-left:auto;width:26px;height:26px;border:none;background:transparent;color:#7d93a8;border-radius:6px;font-size:14px;cursor:pointer" style-hover="color:#ff8a80">✕</button>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="color:#e0b23a">⚠  3 sub-units reporting BUILD DRIFT</div>
+          <div style="color:#7d93a8">core&nbsp;&nbsp;&nbsp;: Power Distribution Core — integrity <span style="color:#ff8a80">DEGRADED</span></div>
+          <div style="color:#7d93a8">action : force sub-unit re-image</div>
+
+          <sc-if value="{{ notSolved }}" hint-placeholder-val="{{ true }}"><span style="display:contents">
+            <div style="height:14px"></div>
+            <div style="color:#a9c2d6">Authenticate with the <span style="color:#35d07f">last-known-good</span> core build signature.</div>
+            <div style="color:#7d93a8">Binary form — enter exactly as recorded.</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap">
+              <span style="color:#35d07f">sig&nbsp;›</span>
+              <input value="{{ resetInput }}" onChange="{{ onResetInput }}" onKeyDown="{{ onResetKey }}" placeholder="0100...." style="flex:1;min-width:180px;background:#08101a;border:1px solid #24384c;border-radius:6px;color:#cfe0ee;caret-color:#35d07f;padding:9px 11px;font:13px ui-monospace,Menlo,monospace;outline:none"/>
+              <button onClick="{{ submitReset }}" style="background:#1f7a4d;color:#eafff2;border:1px solid #2a9c63;border-radius:6px;padding:9px 16px;font-weight:700;font-family:inherit;cursor:pointer;letter-spacing:.03em" style-hover="background:#249159">EXECUTE</button>
+            </div>
+            <sc-if value="{{ resetErr }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px;color:#ff8a80">[FAIL] signature mismatch — sub-units rejected the image. BUILD DRIFT persists.</div>
+            </sc-if>
+          </span></sc-if>
+
+          <sc-if value="{{ solved }}" hint-placeholder-val="{{ false }}"><span style="display:contents">
+            <div style="height:14px"></div>
+            <div style="color:#35d07f">[OK] signature accepted.</div>
+            <div style="color:#a9c2d6">› re-imaging unit_07 … done</div>
+            <div style="color:#a9c2d6">› re-imaging unit_16 … done</div>
+            <div style="color:#a9c2d6">› verifying … all sub-units on build 2.2.0</div>
+            <div style="margin-top:6px;color:#35d07f;font-weight:700">POWER DISTRIBUTION CORE — STABLE ✓</div>
+            <div style="margin-top:16px;padding:14px 16px;background:#08131d;border:1px solid #1f5e42;border-radius:9px">
+              <div style="font-size:11px;letter-spacing:.08em;color:#7d93a8">RECOVERY ACCESS CODE</div>
+              <div style="font-size:26px;font-weight:800;letter-spacing:.1em;color:#eafff2;margin-top:4px">{{ finalCode }}</div>
+              <div style="font-size:12px;color:#7d93a8;margin-top:6px">Use this code at the final control panel.</div>
+            </div>
+          </span></sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;stableSignature&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;01000010 00110010&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;الحل السري&quot;},&quot;rogueSignature&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;01000010 00110011&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;الحل السري&quot;},&quot;finalCode&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;NX-7C4E&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;الحل السري&quot;}}">
+class Component extends DCLogic {
+  state = { selected:null, openFile:null, consoleOpen:false, search:'', resetInput:'', resetStatus:'idle', narrow:false };
+
+  componentDidMount(){
+    this._r = () => { const n = window.innerWidth < 760; if (n !== this.state.narrow) this.setState({ narrow:n }); };
+    this._r();
+    window.addEventListener('resize', this._r);
+  }
+  componentWillUnmount(){ if (this._r) window.removeEventListener('resize', this._r); }
+
+  files(){
+    const sig = (this.props.stableSignature ?? '01000010 00110010');
+    const rogue = (this.props.rogueSignature ?? '01000010 00110011');
+    return [
+      { name:'build_manifest.log', modified:'2026-07-08 02:41', type:'LOG File', size:'2 KB', body:
+`# ================================================
+#  NEXUS :: Power Distribution Core (PDC)
+#  build manifest  —  generated by nexus-buildd
+# ================================================
+
+[core]
+approved_build       = 2.2.0
+last_known_good      = 2.2.0
+last_known_good_sig  = ${sig}
+current_channel      = stable
+
+[history]
+2.2.0   deployed     stable         (in service ~2y)
+2.3.0   deployed     experimental   "efficiency-protocol"
+2.3.0   ROLLED BACK  -> 2.2.0        rollback_status = INCOMPLETE
+
+# NOTE: some sub-units did not re-image after the rollback.
+#       compare each running_sig below against last_known_good_sig.
+
+[sub-units]
+unit_07   running_sig = ${rogue}   state = DRIFT
+unit_11   running_sig = ${sig}   state = OK
+unit_16   running_sig = ${rogue}   state = DRIFT
+` },
+      { name:'power_events_0214.log', modified:'2026-07-08 02:19', type:'LOG File', size:'5 KB', body:
+`# PDC power-event journal — warehouse feeder F-3
+02:09:41  legacy-link auth attempt from unregistered peer   [flagged]
+02:14:00  feeder F-3  DOWN     (drop asserted by unit_07)
+02:14:00  drift set: unit_07, unit_16
+02:18:00  feeder F-3  UP       (auto-restored, no crew action)
+------------------------------------------------------------
+outage_duration = 00:04:00   (exactly)
+recurrence      = none since
+asserting_unit  = unit_07    running_sig = ${rogue}    state = DRIFT
+` },
+      { name:'subgrid_efficiency.log', modified:'2026-07-08 02:00', type:'LOG File', size:'4 KB', body:
+`# efficiency-protocol telemetry  (build 2.3.0, experimental)
+window   load%   target%   drift
+00:00    61      55        +6
+01:00    58      55        +3
+02:00    77      55        +22   <-- spike precedes feeder drop
+telemetry_checksum = 01011010 01100001
+` },
+      { name:'nexus_core.log', modified:'2026-07-07 23:50', type:'LOG File', size:'12 KB', body:
+`# nexus core service log (excerpt)
+23:41  scheduler ok
+23:44  advisory emitted by policy-engine: "protecting what must be protected"  (source: unattributed)
+23:59  heartbeat ok
+boot_hash = 01001110 01011000
+` },
+      { name:'auth_gateway.log', modified:'2026-07-07 21:10', type:'LOG File', size:'3 KB', body:
+`# auth gateway
+sessions_open      = 4
+token_mask         = 01100111 00110001
+last_admin_present = systems.engineer   (account still ACTIVE, not revoked)
+` },
+      { name:'thermal_watch.log', modified:'2026-07-07 18:02', type:'LOG File', size:'6 KB', body:
+`# thermal watch — PDC racks
+rack A   41C   ok
+rack B   43C   ok
+rack C   39C   ok
+no anomalies.
+` },
+      { name:'archive.7z', modified:'2026-06-30 09:00', type:'Archive', size:'88 MB', body:
+`(binary archive — cannot preview)` },
+    ];
+  }
+
+  _submit(){
+    const norm = s => (s || '').replace(/[^01]/g, '');
+    const ans = norm(this.props.stableSignature ?? '01000010 00110010');
+    if (ans.length && norm(this.state.resetInput) === ans) this.setState({ resetStatus:'ok' });
+    else this.setState({ resetStatus:'err' });
+  }
+
+  renderVals(){
+    const p = this.props, st = this.state;
+    const base = this.files();
+    const q = st.search.trim().toLowerCase();
+    const shown = q ? base.filter(f => f.name.toLowerCase().includes(q)) : base;
+    const files = shown.map(f => ({
+      name:f.name, modified:f.modified, type:f.type, size:f.size,
+      rowBg: st.selected === f.name ? '#e2eefb' : 'transparent',
+      onClick: () => st.narrow ? this.setState({ openFile:f.name, selected:f.name }) : this.setState({ selected:f.name }),
+      onDbl: () => this.setState({ openFile:f.name, selected:f.name }),
+    }));
+    const openObj = base.find(f => f.name === st.openFile) || null;
+    const solved = st.resetStatus === 'ok';
+    return {
+      files, wide: !st.narrow, narrow: st.narrow,
+      totalCount: base.length, selected: st.selected, search: st.search,
+      onSearch: (e) => this.setState({ search: e.target.value }),
+      stop: (e) => e.stopPropagation(),
+      openObj, openName: openObj ? openObj.name : '', openBody: openObj ? openObj.body : '',
+      closeViewer: () => this.setState({ openFile:null }),
+      consoleOpen: st.consoleOpen,
+      openConsole: () => this.setState({ consoleOpen:true }),
+      closeConsole: () => this.setState({ consoleOpen:false }),
+      resetInput: st.resetInput,
+      onResetInput: (e) => this.setState({ resetInput: e.target.value, resetStatus:'idle' }),
+      onResetKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this._submit(); } },
+      submitReset: () => this._submit(),
+      solved, notSolved: !solved, resetErr: st.resetStatus === 'err',
+      finalCode: p.finalCode ?? 'NX-7C4E',
+    };
+  }
+}
+</script>
+</body>
+</html>
