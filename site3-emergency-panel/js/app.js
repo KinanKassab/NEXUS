@@ -4,7 +4,12 @@
   var CONFIG = {
     accessCode: 'NX-7C4E',
     engineerLocation: 'توجّهوا إلى غرفة الأرشيف في الطابق السفلي، خلف الرفّ رقم ٧ — هناك يوجد المهندس المفقود.',
-    cityName: 'مدينة أوركيد'
+    cityName: 'مدينة أوركيد',
+    countdown: {
+      startHour: 16,        // العدّ يبدأ الساعة 4:55 مساءً بالتوقيت المحلّي
+      startMinute: 55,
+      durationMinutes: 25
+    }
   };
 
   var state = { attempts: 0 };
@@ -17,8 +22,8 @@
   var errorBox = document.getElementById('error-box');
   var attemptsCount = document.getElementById('attempts-count');
   var locationLines = document.getElementById('location-lines');
-  var clockTime = document.getElementById('clock-time');
-  var clockDate = document.getElementById('clock-date');
+  var countdownTime = document.getElementById('countdown-time');
+  var countdownStatus = document.getElementById('countdown-status');
 
   document.querySelectorAll('[data-bind="cityName"]').forEach(function (el) {
     el.textContent = CONFIG.cityName;
@@ -31,13 +36,30 @@
     locationLines.appendChild(div);
   });
 
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
   function tick() {
     var now = new Date();
-    var timeStr, dateStr;
-    try { timeStr = now.toLocaleTimeString('ar-EG', { hour12: false }); } catch (e) { timeStr = now.toTimeString().slice(0, 8); }
-    try { dateStr = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); } catch (e) { dateStr = now.toDateString(); }
-    clockTime.textContent = timeStr;
-    clockDate.textContent = dateStr;
+    var cd = CONFIG.countdown;
+    var start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), cd.startHour, cd.startMinute, 0);
+    var end = new Date(start.getTime() + cd.durationMinutes * 60 * 1000);
+    var remainingMs, statusStr;
+
+    if (now < start) {
+      remainingMs = cd.durationMinutes * 60 * 1000;
+      statusStr = 'يبدأ العدّ عند ' + pad2(cd.startHour % 12 || 12) + ':' + pad2(cd.startMinute);
+    } else if (now < end) {
+      remainingMs = end - now;
+      statusStr = 'العدّ التنازلي جارٍ…';
+    } else {
+      remainingMs = 0;
+      statusStr = 'انتهى الوقت';
+    }
+
+    var totalSec = Math.ceil(remainingMs / 1000);
+    countdownTime.textContent = pad2(Math.floor(totalSec / 60)) + ':' + pad2(totalSec % 60);
+    countdownTime.classList.toggle('clock-time--warn', now >= start && totalSec > 0 && totalSec <= 5 * 60);
+    countdownStatus.textContent = statusStr;
   }
   tick();
   setInterval(tick, 1000);

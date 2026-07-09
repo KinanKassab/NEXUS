@@ -1,6 +1,6 @@
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:#eaeef0;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:#16242b}
+body{background:#eaeef0;font-family:"Cairo",system-ui,sans-serif;color:#16242b}
 a{color:#0e6b78;text-decoration:none}
 a:hover{text-decoration:underline}
 input{font-family:inherit}
@@ -28,7 +28,8 @@ input{font-family:inherit}
 .danger-dot{width:8px;height:8px;border-radius:50%;background:#c0392b}
 .status-card--dark{flex:1.4;min-width:170px;background:#0e3742;border:1px solid #0e3742;color:#dce9ec}
 .status-label--dark{color:#8fb4bc}
-.clock-time{font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace;letter-spacing:.02em}
+.clock-time{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.clock-time--warn{color:#ffb3a7}
 .clock-date{font-size:11px;color:#8fb4bc;margin-top:2px}
 
 .panel{background:#fff;border:1px solid #d7dfe1;border-radius:14px;box-shadow:0 10px 30px rgba(14,55,66,.08);overflow:hidden}
@@ -42,7 +43,7 @@ input{font-family:inherit}
 
 .field-label{display:block;font-size:12.5px;font-weight:600;color:#3a4c53;margin-bottom:8px}
 .field-group{display:flex;flex-direction:column;gap:11px}
-#code-input{width:100%;padding:15px 16px;border:1.5px solid #cdd8da;border-radius:10px;background:#f7fafa;color:#0e3742;font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;letter-spacing:.22em;text-align:center;text-transform:uppercase;outline:none}
+#code-input{width:100%;padding:15px 16px;border:1.5px solid #cdd8da;border-radius:10px;background:#f7fafa;color:#0e3742;font-family:inherit;font-size:20px;font-weight:600;letter-spacing:.22em;text-align:center;text-transform:uppercase;outline:none}
 #code-input.is-error{border-color:#e0a0a0}
 .submit-btn{width:100%;padding:14px;background:#0e4d5a;color:#eef7f8;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em}
 .submit-btn:hover{background:#0e5b6a}
@@ -69,4 +70,4 @@ input{font-family:inherit}
 .reset-btn:hover{color:#0e4d5a}
 
 .footer-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:11.5px;color:#8b989e}
-.report-id{font-family:'IBM Plex Mono',monospace}
+.report-id{font-variant-numeric:tabular-nums}
